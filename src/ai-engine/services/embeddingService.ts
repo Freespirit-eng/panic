@@ -12,7 +12,7 @@ export const embeddingService = {
    */
   getEmbeddingVector: async (text: string): Promise<number[]> => {
     const result = await ai.models.embedContent({
-      model: 'text-embedding-004',
+      model: 'gemini-embedding-2',
       contents: text,
     });
 

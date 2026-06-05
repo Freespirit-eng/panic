@@ -44,7 +44,7 @@ async function main() {
   app.listen(PORT, () => {
     console.log(`\n🚀 PanicSense AI Engine running on port ${PORT}`);
     console.log(`   Health check → http://localhost:${PORT}/health`);
-    console.log(`   Model        → gemini-2.0-flash + text-embedding-004\n`);
+    console.log(`   Model        → gemini-2.0-flash + gemini-embedding-2\n`);
   });
 }
 
