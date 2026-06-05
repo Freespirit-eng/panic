@@ -20,7 +20,9 @@
     "vite": "^6.2.3",
     "express": "^4.21.2",
     "dotenv": "^17.2.3",
-    "motion": "^12.23.24"
+    "motion": "^12.23.24",
+    "zod": "^3.24.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
