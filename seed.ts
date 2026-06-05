@@ -199,7 +199,7 @@ export function generateSeededIncidents(): Incident[] {
     const type = incidentTypes[i % incidentTypes.length];
     const severity = severities[i % severities.length];
     const baseLoc = locations[locIndex];
-    
+
     // Slight offset to distribute pins
     const lat = baseLoc.lat + (Math.random() - 0.5) * 0.01;
     const lng = baseLoc.lng + (Math.random() - 0.5) * 0.01;
@@ -232,9 +232,10 @@ export function generateSeededIncidents(): Incident[] {
   return list;
 }
 
-// Simple execution trigger if called directly (ESM-compatible)
-const _isMain = import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`;
-if (_isMain) {
+// ES module equivalent of require.main === module
+import { fileURLToPath } from 'url';
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
   console.log('--- PANICSENSE SEED GENERATOR ---');
   console.log(`Operators created: ${seededOperators.length}`);
   console.log(`Volunteers created: ${seededVolunteers.length}`);
