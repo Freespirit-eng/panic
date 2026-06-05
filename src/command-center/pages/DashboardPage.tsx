@@ -4,7 +4,7 @@ import {
   Activity, AlertTriangle, Users, Building2,
   CheckCircle2, Wifi, WifiOff, TrendingUp, TrendingDown,
   MapPin, Clock, Shield, ShieldAlert, ShieldCheck,
-  BarChart3, PieChart
+  BarChart3, PieChart, Flame, Droplets, Zap, Construction, Building
 } from 'lucide-react';
 import { commanderApi } from '../services/commanderApi';
 import { useSocket } from '../hooks/useSocket';
@@ -36,8 +36,12 @@ function severityBorder(s: string) {
     : 'border-l-green-500';
 }
 
-const INCIDENT_TYPE_ICONS: Record<string, string> = {
-  Flood: '🌊', Fire: '🔥', Earthquake: '🌐', 'Road Collapse': '🚧', 'Building Damage': '🏚️'
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  Flood: <Droplets className="w-4 h-4" />,
+  Fire: <Flame className="w-4 h-4" />,
+  Earthquake: <Zap className="w-4 h-4" />,
+  'Road Collapse': <Construction className="w-4 h-4" />,
+  'Building Damage': <Building className="w-4 h-4" />,
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -333,8 +337,8 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
           {socketConnected
-            ? <><Wifi className="w-3.5 h-3.5 text-green-400" /><span className="text-green-400">LIVE</span></>
-            : <><WifiOff className="w-3.5 h-3.5 text-red-400" /><span className="text-red-400">OFFLINE</span></>
+            ? <><Wifi className="w-3.5 h-3.5 text-green-400" /><span className="text-green-400 font-bold font-mono">LIVE</span></>
+            : <><WifiOff className="w-3.5 h-3.5 text-red-400" /><span className="text-red-400 font-bold font-mono">OFFLINE</span></>
           }
           <span className="text-gray-700">|</span>
           <span>{new Date().toLocaleTimeString()}</span>
@@ -352,8 +356,9 @@ export default function DashboardPage() {
           >
             <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
             <span className="text-xs font-mono font-bold text-red-300">NEW INCIDENT:</span>
-            <span className="text-xs text-gray-300">
-              {INCIDENT_TYPE_ICONS[newIncidentFlash.type]} {newIncidentFlash.type} — {newIncidentFlash.location.address}
+            <span className="text-xs text-gray-300 flex items-center gap-1.5 font-mono">
+              <span className="text-red-400 shrink-0">{TYPE_ICONS[newIncidentFlash.type]}</span>
+              {newIncidentFlash.type} — {newIncidentFlash.location.address}
             </span>
             <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ml-auto ${severityColor(newIncidentFlash.severity)}`}>
               {newIncidentFlash.severity}
@@ -362,7 +367,6 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Active Incidents" value={kpi.activeIncidents} icon={Activity}
           color="border-l-blue-500" trend="up" />
@@ -403,7 +407,9 @@ export default function DashboardPage() {
                     : 'bg-gray-900/50 border-gray-800/50 hover:bg-gray-800/80'}
                   ${severityBorder(inc.severity)}`}
               >
-                <span className="text-lg">{INCIDENT_TYPE_ICONS[inc.type] ?? '⚡'}</span>
+                <span className="p-1.5 rounded-lg bg-gray-950 text-gray-400 shrink-0 flex items-center justify-center border border-gray-800">
+                  {TYPE_ICONS[inc.type] ?? <Zap className="w-4 h-4" />}
+                </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${severityColor(inc.severity)}`}>
@@ -442,10 +448,12 @@ export default function DashboardPage() {
                     <span className="text-gray-500">Priority: <span className="text-white font-bold">{selectedIncident.priorityScore}/100</span></span>
                   </div>
                   <p className="text-gray-400 leading-relaxed">{selectedIncident.recommendedAction}</p>
-                  <div className="flex gap-4 text-gray-500">
-                    <span>👥 {selectedIncident.peopleDetected} people</span>
-                    <span>🧒 {selectedIncident.childrenDetected} children</span>
-                    <span>💧 Water: {selectedIncident.waterLevel}</span>
+                  <div className="flex gap-4 text-gray-500 items-center font-mono text-[10px] pt-1">
+                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {selectedIncident.peopleDetected} people</span>
+                    <span className="flex items-center gap-1"><span className="text-[10px] text-gray-600 uppercase">Minors:</span> {selectedIncident.childrenDetected}</span>
+                    {selectedIncident.waterLevel !== 'N/A' && (
+                      <span className="flex items-center gap-1"><Droplets className="w-3.5 h-3.5 text-blue-500" /> Water: {selectedIncident.waterLevel}</span>
+                    )}
                   </div>
                 </div>
               </motion.div>

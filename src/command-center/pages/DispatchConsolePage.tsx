@@ -88,7 +88,7 @@ function DispatchForm({
         ...(prefill?.type && { type: prefill.type }),
         ...(prefill?.severity && { severity: prefill.severity }),
       });
-      addToast('mission', '✅ Mission Created', `Mission ${mission.id?.slice(0, 8)} dispatched`);
+      addToast('mission', 'Mission Dispatched', `Mission ${mission.id?.slice(0, 8)} created`);
       onSuccess(mission);
     } catch {
       addToast('info', 'Error', 'Could not create mission');

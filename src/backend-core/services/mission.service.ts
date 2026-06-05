@@ -2,6 +2,7 @@ import { db } from '../database/db';
 import { Mission, MissionStatus, MissionTimelineEvent } from '../../shared/types';
 import { AppError } from '../middleware/error.middleware';
 import { socketService } from './socket.service';
+import { incidentService } from './incident.service';
 
 export class MissionService {
   private static instance: MissionService;
@@ -96,7 +97,6 @@ export class MissionService {
 
     // If resolved, we can auto-resolve or update related incidents if needed
     if (newStatus === 'Resolved') {
-      const { incidentService } = require('./incident.service');
       try {
         await incidentService.updateIncident(mission.incidentId, { verification: 'Verified' });
       } catch (err) {

@@ -303,7 +303,7 @@ function BroadcastItem({ broadcast }: { broadcast: Broadcast }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function BroadcastRegulatorPage() {
+export default function BroadcastRegulatorPage({ viewMode = 'all' }: { viewMode?: 'all' | 'broadcast' | 'analytics' }) {
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -331,7 +331,7 @@ export default function BroadcastRegulatorPage() {
   const handleBroadcastSent = useCallback((data: unknown) => {
     const b = data as Broadcast;
     setBroadcasts(prev => [b, ...prev]);
-    addToast('broadcast', '📡 Broadcast Delivered', b.title);
+    addToast('broadcast', 'Broadcast Delivered', b.title);
   }, [addToast]);
 
   useSocket(
@@ -355,7 +355,7 @@ export default function BroadcastRegulatorPage() {
         ...(form.useDelay && form.delayMins > 0 && { delayMs: form.delayMins * 60000 }),
       });
       setBroadcasts(prev => [broadcast, ...prev]);
-      addToast('broadcast', '✅ Broadcast Sent', form.title);
+      addToast('broadcast', 'Broadcast Sent', form.title);
       setSentSuccess(true);
       setForm({ type: 'Emergency Alert', title: '', message: '', area: '', useDelay: false, delayMins: 0 });
       if (sentTimer.current) clearTimeout(sentTimer.current);
@@ -383,167 +383,177 @@ export default function BroadcastRegulatorPage() {
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-black text-white font-mono tracking-wide">BROADCAST REGULATOR</h1>
-        <p className="text-xs text-gray-500 font-mono">EOC Alert Composer &amp; Delivery Monitor</p>
+        <h1 className="text-lg font-black text-white font-mono tracking-wide">
+          {viewMode === 'analytics' ? 'EOC SYSTEM ANALYTICS' : 'BROADCAST REGULATOR'}
+        </h1>
+        <p className="text-xs text-gray-500 font-mono">
+          {viewMode === 'analytics' ? 'Operations Center Statistical Matrix' : 'EOC Alert Composer & Delivery Monitor'}
+        </p>
       </div>
 
-      {/* Composer + Log */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Composer */}
-        <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-4 h-4 text-blue-400" />
-            <h2 className="text-sm font-mono font-bold text-white">BROADCAST COMPOSER</h2>
-          </div>
+      {viewMode !== 'analytics' && (
+        <>
+          {/* Composer + Log */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Composer */}
+            <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <MessageSquare className="w-4 h-4 text-blue-400" />
+                <h2 className="text-sm font-mono font-bold text-white">BROADCAST COMPOSER</h2>
+              </div>
 
-          <AnimatePresence>
-            {sentSuccess && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2 bg-green-950 border border-green-800 rounded-lg px-4 py-3 mb-4"
-              >
-                <CheckCircle2 className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-green-300 font-mono font-bold">Broadcast sent successfully!</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form onSubmit={handleSend} className="space-y-4">
-            {/* Type selector */}
-            <div>
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-2">
-                Broadcast Type
-              </label>
-              <div className="grid grid-cols-2 gap-1.5">
-                {BROADCAST_TYPES.map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setForm(p => ({ ...p, type: t }))}
-                    className={`text-[10px] font-mono font-bold px-3 py-2 rounded border transition-colors text-left
-                      ${form.type === t ? typeBadge(t) : 'border-gray-700 text-gray-500 hover:border-gray-600'}`}
+              <AnimatePresence>
+                {sentSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 bg-green-950 border border-green-800 rounded-lg px-4 py-3 mb-4"
                   >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span className="text-xs text-green-300 font-mono font-bold">Broadcast sent successfully!</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {/* Title */}
-            <div>
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">
-                Title
-              </label>
-              <input
-                value={form.title}
-                onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                placeholder="e.g. Immediate Evacuation Required"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 transition-colors"
-                required
-              />
-            </div>
+              <form onSubmit={handleSend} className="space-y-4">
+                {/* Type selector */}
+                <div>
+                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-2">
+                    Broadcast Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {BROADCAST_TYPES.map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setForm(p => ({ ...p, type: t }))}
+                        className={`text-[10px] font-mono font-bold px-3 py-2 rounded border transition-colors text-left
+                          ${form.type === t ? typeBadge(t) : 'border-gray-700 text-gray-500 hover:border-gray-600'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Message */}
-            <div>
-              <div className="flex justify-between mb-1">
-                <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">
-                  Message
-                </label>
-                <span className={`text-[10px] font-mono ${form.message.length > charLimit - 50 ? 'text-red-400' : 'text-gray-600'}`}>
-                  {form.message.length}/{charLimit}
-                </span>
-              </div>
-              <textarea
-                value={form.message}
-                onChange={e => setForm(p => ({ ...p, message: e.target.value.slice(0, charLimit) }))}
-                rows={4}
-                placeholder="Broadcast message..."
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 resize-none transition-colors"
-                required
-              />
-            </div>
-
-            {/* Area */}
-            <div>
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">
-                Target Area
-              </label>
-              <input
-                value={form.area}
-                onChange={e => setForm(p => ({ ...p, area: e.target.value }))}
-                placeholder="e.g. Mission District, All Zones"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 transition-colors"
-                required
-              />
-            </div>
-
-            {/* Delay toggle */}
-            <div className="flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg">
-              <button
-                type="button"
-                onClick={() => setForm(p => ({ ...p, useDelay: !p.useDelay }))}
-                className={`relative w-9 h-5 rounded-full transition-colors border ${form.useDelay ? 'bg-blue-600 border-blue-500' : 'bg-gray-800 border-gray-700'}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${form.useDelay ? 'translate-x-4' : 'translate-x-0'}`} />
-              </button>
-              <span className="text-xs text-gray-400 font-mono">Scheduled Delay</span>
-              {form.useDelay && (
-                <div className="flex items-center gap-2 ml-auto">
+                {/* Title */}
+                <div>
+                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">
+                    Title
+                  </label>
                   <input
-                    type="range" min={0} max={60} step={1}
-                    value={form.delayMins}
-                    onChange={e => setForm(p => ({ ...p, delayMins: Number(e.target.value) }))}
-                    className="w-24 accent-blue-500"
+                    value={form.title}
+                    onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                    placeholder="e.g. Immediate Evacuation Required"
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 transition-colors"
+                    required
                   />
-                  <span className="text-xs text-blue-400 font-mono w-12">{form.delayMins}m</span>
                 </div>
-              )}
+
+                {/* Message */}
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">
+                      Message
+                    </label>
+                    <span className={`text-[10px] font-mono ${form.message.length > charLimit - 50 ? 'text-red-400' : 'text-gray-600'}`}>
+                      {form.message.length}/{charLimit}
+                    </span>
+                  </div>
+                  <textarea
+                    value={form.message}
+                    onChange={e => setForm(p => ({ ...p, message: e.target.value.slice(0, charLimit) }))}
+                    rows={4}
+                    placeholder="Broadcast message..."
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 resize-none transition-colors"
+                    required
+                  />
+                </div>
+
+                {/* Area */}
+                <div>
+                  <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">
+                    Target Area
+                  </label>
+                  <input
+                    value={form.area}
+                    onChange={e => setForm(p => ({ ...p, area: e.target.value }))}
+                    placeholder="e.g. Mission District, All Zones"
+                    className="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 transition-colors"
+                    required
+                  />
+                </div>
+
+                {/* Delay toggle */}
+                <div className="flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, useDelay: !p.useDelay }))}
+                    className={`relative w-9 h-5 rounded-full transition-colors border ${form.useDelay ? 'bg-blue-600 border-blue-500' : 'bg-gray-800 border-gray-700'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${form.useDelay ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </button>
+                  <span className="text-xs text-gray-400 font-mono">Scheduled Delay</span>
+                  {form.useDelay && (
+                    <div className="flex items-center gap-2 ml-auto">
+                      <input
+                        type="range" min={0} max={60} step={1}
+                        value={form.delayMins}
+                        onChange={e => setForm(p => ({ ...p, delayMins: Number(e.target.value) }))}
+                        className="w-24 accent-blue-500"
+                      />
+                      <span className="text-xs text-blue-400 font-mono w-12">{form.delayMins}m</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className={`w-full flex items-center justify-center gap-2 text-white text-xs font-mono font-bold py-3 rounded-lg transition-colors
+                    ${sending ? 'bg-blue-700 opacity-70' : 'bg-blue-600 hover:bg-blue-500'}`}
+                >
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Radio className="w-4 h-4" />}
+                  {sending ? 'TRANSMITTING...' : 'SEND BROADCAST'}
+                </button>
+              </form>
             </div>
 
-            <button
-              type="submit"
-              disabled={sending}
-              className={`w-full flex items-center justify-center gap-2 text-white text-xs font-mono font-bold py-3 rounded-lg transition-colors
-                ${sending ? 'bg-blue-700 opacity-70' : 'bg-blue-600 hover:bg-blue-500'}`}
-            >
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Radio className="w-4 h-4" />}
-              {sending ? 'TRANSMITTING...' : 'SEND BROADCAST'}
-            </button>
-          </form>
-        </div>
+            {/* Broadcast Log */}
+            <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <h2 className="text-sm font-mono font-bold text-white">BROADCAST LOG</h2>
+                <span className="text-[10px] text-gray-600 font-mono ml-auto">{broadcasts.length} total</span>
+              </div>
 
-        {/* Broadcast Log */}
-        <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-4 h-4 text-blue-400" />
-            <h2 className="text-sm font-mono font-bold text-white">BROADCAST LOG</h2>
-            <span className="text-[10px] text-gray-600 font-mono ml-auto">{broadcasts.length} total</span>
+              <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                <AnimatePresence>
+                  {broadcasts.length === 0 && (
+                    <div className="text-center text-gray-600 text-xs font-mono py-8">
+                      No broadcasts yet
+                    </div>
+                  )}
+                  {broadcasts.map(b => (
+                    <div key={b.id}>
+                      <BroadcastItem broadcast={b} />
+                    </div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
-            <AnimatePresence>
-              {broadcasts.length === 0 && (
-                <div className="text-center text-gray-600 text-xs font-mono py-8">
-                  No broadcasts yet
-                </div>
-              )}
-              {broadcasts.map(b => (
-                <div key={b.id}>
-                  <BroadcastItem broadcast={b} />
-                </div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
+          {/* Queue Monitor */}
+          <QueueMonitor />
+        </>
+      )}
 
-      {/* Queue Monitor */}
-      <QueueMonitor />
-
-      {/* Analytics Section */}
-      <AnalyticsSection data={analytics} onExport={handleExport} exporting={exporting} />
+      {viewMode !== 'broadcast' && (
+        /* Analytics Section */
+        <AnalyticsSection data={analytics} onExport={handleExport} exporting={exporting} />
+      )}
     </div>
   );
 }

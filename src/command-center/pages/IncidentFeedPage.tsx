@@ -387,7 +387,7 @@ function IncidentCard({
           <span>{incident.peopleDetected}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span>🧒</span>
+          <span className="text-[9px] text-gray-500 uppercase font-mono tracking-wider font-bold">Minors:</span>
           <span>{incident.childrenDetected}</span>
         </div>
         <div className="ml-auto">
@@ -478,7 +478,7 @@ export default function IncidentFeedPage() {
   const handleIncidentCreated = useCallback((data: unknown) => {
     const inc = data as Incident;
     setIncidents(prev => [inc, ...prev]);
-    addToast('critical', '🔴 New Incident', `${inc.type} — ${inc.location.address}`);
+    addToast('critical', 'New Incident Alert', `${inc.type} — ${inc.location.address}`);
   }, [addToast]);
 
   const handleIncidentUpdated = useCallback((data: unknown) => {

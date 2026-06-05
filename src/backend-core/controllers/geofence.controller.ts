@@ -19,7 +19,7 @@ export const geofenceController = {
 
   createGeofence: asyncHandler(async (req: Request, res: Response) => {
     const validatedData = createGeofenceSchema.parse(req.body);
-    const geofence = await geofenceService.createGeofence(validatedData);
+    const geofence = await geofenceService.createGeofence(validatedData as any);
     res.status(201).json({ success: true, data: geofence });
   })
 };

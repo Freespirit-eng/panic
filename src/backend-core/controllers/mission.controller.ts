@@ -18,7 +18,7 @@ export const missionController = {
 
   createMission: asyncHandler(async (req: Request, res: Response) => {
     const validatedData = createMissionSchema.parse(req.body);
-    const mission = await missionService.createMission(validatedData);
+    const mission = await missionService.createMission(validatedData as any);
     res.status(201).json({ success: true, data: mission });
   }),
 
@@ -36,7 +36,7 @@ export const missionController = {
     // If other fields are provided, apply updates
     if (Object.keys(otherDetails).length > 0) {
       const validatedData = createMissionSchema.partial().parse(otherDetails);
-      mission = await missionService.updateMissionDetails(id, validatedData);
+      mission = await missionService.updateMissionDetails(id, validatedData as any);
     }
 
     if (!mission) {

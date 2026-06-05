@@ -114,9 +114,9 @@ function MapPopup({ popup, onClose }: { popup: PopupData; onClose: () => void })
               <span className="text-xs font-bold text-white">{inc.type}</span>
             </div>
             <p className="text-xs text-gray-400">{inc.location.address}</p>
-            <div className="flex gap-3 text-[10px] text-gray-500 font-mono">
-              <span>👥 {inc.peopleDetected}</span>
-              <span>⚡ {inc.priorityScore}/100</span>
+            <div className="flex gap-3 text-[10px] text-gray-500 font-mono items-center">
+              <span className="flex items-center gap-1"><Users className="w-3 h-3 text-gray-600" /> {inc.peopleDetected}</span>
+              <span className="flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-yellow-600" /> {inc.priorityScore}/100</span>
             </div>
             <p className="text-[10px] text-gray-500 truncate">{inc.recommendedAction}</p>
           </div>
@@ -214,7 +214,7 @@ export default function GisMapPage() {
   const handleGeofenceBreached = useCallback((data: unknown) => {
     const { geofenceId } = data as { geofenceId: string };
     setGeofences(prev => prev.map(g => g.id === geofenceId ? { ...g, status: 'Breached' } : g));
-    addToast('geofence', '⚠️ Geofence Breached', `Zone ${geofenceId.slice(0, 8)} breached`);
+    addToast('geofence', 'Geofence Breached Alert', `Zone ${geofenceId.slice(0, 8)} breached`);
   }, [addToast]);
 
   useSocket(
