@@ -1,23 +1,19 @@
-import express from 'express';
+import { createServer } from 'http';
 import dotenv from 'dotenv';
-import router from './src/backend-core/routes/index';
+import app from './src/backend-core/app';
+import { socketService } from './src/backend-core/services/socket.service';
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json({ limit: '10mb' }));
+// Create HTTP Server wrapping Express App
+const httpServer = createServer(app);
 
-// Route Ingress Entrypoint - Developer 4 (Backend Core)
-app.use('/api', router);
+// Initialize Socket.IO with WebSocket Handlers
+socketService.initialize(httpServer);
 
-// Error Handling Middleware Boundary
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('EOC Server Error:', err.message);
-  res.status(500).json({ error: 'Internal server error boundary' });
-});
-
-app.listen(PORT, () => {
+// Boot Server
+httpServer.listen(PORT, () => {
   console.log(`PanicSense Foundation Server running on port ${PORT}`);
 });

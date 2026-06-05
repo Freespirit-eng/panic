@@ -132,3 +132,33 @@ export interface IncidentEmbedding {
   vector: number[];
   modelSignature: string;
 }
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface DuplicateResult {
+  isDuplicate: boolean;
+  confidence: number;
+  matchedIncidentId?: string;
+}
+
+export interface KnowledgeDocument {
+  id: string;
+  title: string;
+  category: IncidentType | 'General Safety';
+  content: string;
+  tags: string[];
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'citizen' | 'volunteer' | 'operator' | 'admin';
+  passwordHash?: string;
+}
+
+
