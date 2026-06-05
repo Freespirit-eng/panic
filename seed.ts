@@ -199,7 +199,7 @@ export function generateSeededIncidents(): Incident[] {
     const type = incidentTypes[i % incidentTypes.length];
     const severity = severities[i % severities.length];
     const baseLoc = locations[locIndex];
-    
+
     // Slight offset to distribute pins
     const lat = baseLoc.lat + (Math.random() - 0.5) * 0.01;
     const lng = baseLoc.lng + (Math.random() - 0.5) * 0.01;
