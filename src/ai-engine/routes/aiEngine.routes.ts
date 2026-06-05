@@ -50,6 +50,35 @@ router.post('/duplicate-check', async (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /analyze-image
+// Called by M4's AIService.analyzeImage()
+// Body: { imageBase64: string }
+// ---------------------------------------------------------------------------
+router.post('/analyze-image', async (req: Request, res: Response) => {
+  try {
+    const { imageBase64 } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({
+        error: 'Missing required field: imageBase64',
+      });
+    }
+
+    const decision = await geminiService.generateStructuredReport(
+      'Identify the emergency type, severity level, estimated people affected, and write a recommended action.',
+      imageBase64
+    );
+
+    return res.json(decision);
+  } catch (err: any) {
+    console.error('[AI Engine] /analyze-image error:', err.message);
+    return res.status(503).json({
+      error: 'AI Engine temporarily unavailable',
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // POST /citizen-chat
 // Called by M4's AIService.getCitizenChatResponse()
 // Body: { message: string }

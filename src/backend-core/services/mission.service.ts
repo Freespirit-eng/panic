@@ -59,6 +59,7 @@ export class MissionService {
     };
 
     db.missions.unshift(newMission);
+    db.save();
     socketService.emitMissionCreated(newMission);
 
     return newMission;
@@ -104,6 +105,7 @@ export class MissionService {
       }
     }
 
+    db.save();
     socketService.emitMissionUpdated(mission);
     return mission;
   }
@@ -120,6 +122,7 @@ export class MissionService {
       mission.timeline = [...mission.timeline, ...data.timeline];
     }
 
+    db.save();
     socketService.emitMissionUpdated(mission);
     return mission;
   }

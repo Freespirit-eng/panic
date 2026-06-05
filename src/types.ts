@@ -114,6 +114,8 @@ export interface Volunteer {
   equipment: string[];
   notifyRadiusKm: number;
   receivedAlerts: VolunteerAlertNotification[];
+  age?: number;
+  gender?: string;
 }
 
 

@@ -12,5 +12,15 @@ export const ragController = {
       validatedData.longitude
     );
     res.status(200).json({ success: true, ...result });
+  }),
+
+  handleAnalyzeImage: asyncHandler(async (req: Request, res: Response) => {
+    const { imageBase64 } = req.body;
+    if (!imageBase64) {
+      res.status(400).json({ success: false, error: 'Missing required field: imageBase64' });
+      return;
+    }
+    const result = await aiService.analyzeImage(imageBase64);
+    res.status(200).json({ success: true, ...result });
   })
 };

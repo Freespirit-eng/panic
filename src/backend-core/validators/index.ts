@@ -27,7 +27,9 @@ export const createVolunteerSchema = z.object({
   location: locationSchema,
   skills: z.array(z.string()).default([]),
   equipment: z.array(z.string()).default([]),
-  notifyRadiusKm: z.number().positive().default(5)
+  notifyRadiusKm: z.number().positive().default(5),
+  age: z.number().int().positive().optional(),
+  gender: z.string().optional()
 });
 
 // 3. Create Mission Validator Schema

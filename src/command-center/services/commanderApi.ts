@@ -107,9 +107,14 @@ export const commanderApi = {
       body: JSON.stringify(data),
     }),
 
-  // ─── Volunteers ─────────────────────────────────────────────────────────────
   getVolunteers: (): Promise<Volunteer[]> =>
     apiFetch<Volunteer[]>('/volunteers'),
+
+  assignIncidentToVolunteer: (volunteerId: string, incidentId: string): Promise<Volunteer> =>
+    apiFetch<Volunteer>(`/volunteers/${volunteerId}/assign`, {
+      method: 'POST',
+      body: JSON.stringify({ incidentId }),
+    }),
 
   // ─── Analytics ──────────────────────────────────────────────────────────────
   getAnalyticsSummary: async (): Promise<{

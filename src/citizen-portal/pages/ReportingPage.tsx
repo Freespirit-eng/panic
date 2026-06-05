@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   AlertTriangle,
@@ -84,8 +84,10 @@ export default function ReportingPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // — Voice —
+  // — Voice & AI Image analysis —
   const [isListening, setIsListening] = useState(false);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
@@ -100,15 +102,85 @@ export default function ReportingPage() {
 
   const toast = useToast();
 
+  // ── Submit Helper ────────────────────────────────────────────────────────────
+  const submitReport = useCallback(async (payload: ReportSubmitRequest) => {
+    setPageState('submitting');
+    try {
+      const res = await citizenApi.submitIncidentReport(payload);
+      setCreatedIncident(res.createdIncident);
+      localStorage.setItem('panicsense_reported_incident_id', res.createdIncident.id);
+
+      if (
+        res.createdIncident.verification === 'Flagged' ||
+        res.createdIncident.duplicates > 0
+      ) {
+        setPageState('duplicate');
+        toast.warning('⚠ Duplicate incident detected — please review before confirming.');
+      } else {
+        setPageState('success');
+        toast.success('✓ Incident reported successfully. Responders have been notified.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Submission failed. Please try again.';
+      setErrorMsg(msg);
+      setPageState('error');
+      toast.error(msg);
+    }
+  }, [toast]);
+
   // ── Image Upload ─────────────────────────────────────────────────────────────
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const result = reader.result as string;
       setImageBase64(result);
       setImagePreview(result);
+
+      // Perform AI image analysis instantly
+      setIsAnalyzingImage(true);
+      try {
+        const analysis = await citizenApi.analyzeImage(result);
+        const resolvedType = (analysis.type as IncidentType) || 'Flood';
+        const resolvedSeverity = (analysis.severity as SeverityLevel) || 'High';
+        const resolvedPeople = String(analysis.peopleDetected ?? 0);
+        const resolvedChildren = String(analysis.childrenDetected ?? 0);
+
+        if (analysis.type) setIncidentType(resolvedType);
+        if (analysis.severity) setSeverity(resolvedSeverity);
+        if (analysis.peopleDetected !== undefined) setPeopleDetected(resolvedPeople);
+        if (analysis.childrenDetected !== undefined) setChildrenDetected(resolvedChildren);
+
+        let finalDescription = description;
+        if (analysis.recommendedAction) {
+          const separator = finalDescription ? '\n\n' : '';
+          finalDescription = finalDescription + separator + `[AI Image Analysis recommendation]: ${analysis.recommendedAction}`;
+          setDescription(finalDescription);
+        }
+
+        toast.success(`AI Analysis Complete: Identified a ${resolvedType} emergency with ${resolvedSeverity} severity.`);
+
+        // Auto-submit report immediately
+        const payload: ReportSubmitRequest = {
+          type: resolvedType,
+          severity: resolvedSeverity,
+          description: finalDescription || `Reported ${resolvedType} emergency.`,
+          locationInput: address || 'Current Location',
+          lat: lat ? parseFloat(lat) : undefined,
+          lng: lng ? parseFloat(lng) : undefined,
+          peopleDetected: parseInt(resolvedPeople) || 0,
+          childrenDetected: parseInt(resolvedChildren) || 0,
+          imageBase64: result,
+        };
+
+        await submitReport(payload);
+      } catch (err: any) {
+        toast.error('AI Image analysis failed. Please manually select the type and severity.');
+        console.warn('AI Image analysis failed:', err.message);
+      } finally {
+        setIsAnalyzingImage(false);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -141,19 +213,17 @@ export default function ReportingPage() {
     rec.interimResults = true;
     rec.lang = 'en-US';
 
-    let finalTranscript = description;
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (event: any) => {
-      let interim = '';
+      let finalSpeech = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + ' ';
-        } else {
-          interim = event.results[i][0].transcript;
+          finalSpeech += event.results[i][0].transcript + ' ';
         }
       }
-      setDescription(finalTranscript + interim);
+      if (finalSpeech) {
+        setDescription((prev) => prev ? prev + ' ' + finalSpeech : finalSpeech);
+      }
     };
 
     rec.onerror = () => {
@@ -167,7 +237,89 @@ export default function ReportingPage() {
     recognitionRef.current = rec;
     rec.start();
     setIsListening(true);
-  }, [isListening, description]);
+  }, [isListening]);
+
+  // ── Redirection to Chat ────────────────────────────────────────────────────────
+  const redirectToChat = useCallback(() => {
+    if (!createdIncident) return;
+    
+    // Prepare safety query
+    const safetyQuery = `I just reported a ${createdIncident.type} emergency of ${createdIncident.severity} severity at ${createdIncident.location.address}. What immediate safety guidelines and evacuation protocols should I follow?`;
+    
+    localStorage.setItem('citizen_chat_init_message', safetyQuery);
+    
+    // Dispatch navigation event
+    window.dispatchEvent(new CustomEvent('navigate-citizen-portal', {
+      detail: { path: 'chat' }
+    }));
+  }, [createdIncident]);
+
+  useEffect(() => {
+    if (pageState === 'success' && createdIncident) {
+      setCountdown(5);
+      const interval = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(interval);
+            redirectToChat();
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [pageState, createdIncident, redirectToChat]);
+
+  // ── Auto-Detect Location ──────────────────────────────────────────────────────
+  const detectLocation = useCallback(async () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    toast.info('Detecting live location...');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        setLat(String(latitude.toFixed(6)));
+        setLng(String(longitude.toFixed(6)));
+
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          toast.success('Location detected.');
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+          );
+          const data = await res.json();
+          if (data.status === 'OK' && data.results?.[0]) {
+            const formatted = data.results[0].formatted_address;
+            setAddress(formatted);
+            toast.success('Location resolved using Google Maps API.');
+          } else {
+            setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+            toast.success('Location detected.');
+          }
+        } catch (err) {
+          setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          toast.success('Location detected.');
+        }
+      },
+      (error) => {
+        toast.error(`Location detection failed: ${error.message}`);
+      }
+    );
+  }, [toast]);
+
+  useEffect(() => {
+    detectLocation();
+  }, []);
 
   // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,8 +329,6 @@ export default function ReportingPage() {
       setPageState('error');
       return;
     }
-
-    setPageState('submitting');
 
     const payload: ReportSubmitRequest = {
       type: incidentType,
@@ -192,26 +342,7 @@ export default function ReportingPage() {
       imageBase64: imageBase64 ?? undefined,
     };
 
-    try {
-      const res = await citizenApi.submitIncidentReport(payload);
-      setCreatedIncident(res.createdIncident);
-
-      if (
-        res.createdIncident.verification === 'Flagged' ||
-        res.createdIncident.duplicates > 0
-      ) {
-        setPageState('duplicate');
-        toast.warning('⚠ Duplicate incident detected — please review before confirming.');
-      } else {
-        setPageState('success');
-        toast.success('✓ Incident reported successfully. Responders have been notified.');
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Submission failed. Please try again.';
-      setErrorMsg(msg);
-      setPageState('error');
-      toast.error(msg);
-    }
+    await submitReport(payload);
   };
 
   // ── Duplicate actions ─────────────────────────────────────────────────────────
@@ -294,8 +425,25 @@ export default function ReportingPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             onSubmit={handleSubmit}
-            className="space-y-4"
+            className="space-y-4 relative"
           >
+            {/* AI Image Analysis loading overlay */}
+            <AnimatePresence>
+              {isAnalyzingImage && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-[#060a12]/80 backdrop-blur-md rounded-2xl z-50 flex flex-col items-center justify-center gap-4 border border-green-500/20"
+                >
+                  <Loader2 className="w-10 h-10 text-green-400 animate-spin" />
+                  <div className="text-center font-mono space-y-1">
+                    <p className="text-sm text-white font-bold tracking-widest uppercase animate-pulse">AI Engine Analyzing Image</p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">Detecting disaster patterns & assessing severity...</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Error banner */}
             <AnimatePresence>
               {pageState === 'error' && (
@@ -369,9 +517,18 @@ export default function ReportingPage() {
 
             {/* Row 2 — Location */}
             <div className="bg-[#111827] border border-gray-800 rounded-xl p-4 space-y-3">
-              <label className="block text-[10px] font-mono text-gray-500 tracking-widest uppercase flex items-center gap-2">
-                <MapPin className="w-3 h-3" /> Location
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-[10px] font-mono text-gray-500 tracking-widest uppercase flex items-center gap-2">
+                  <MapPin className="w-3 h-3" /> Location
+                </label>
+                <button
+                  type="button"
+                  onClick={detectLocation}
+                  className="flex items-center gap-1.5 text-[9px] font-mono bg-[#0f2416] hover:bg-[#163520] border border-green-800/40 text-green-400 hover:text-green-300 px-2 py-1 rounded transition cursor-pointer"
+                >
+                  📍 AUTO-DETECT
+                </button>
+              </div>
               <input
                 id="location-address"
                 type="text"
@@ -648,14 +805,16 @@ export default function ReportingPage() {
               <div className="w-12 h-12 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-6 h-6 text-green-400" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-base font-mono font-bold text-green-300">
                   Report Submitted Successfully
                 </h3>
-                <p className="text-xs text-green-200/60 mt-0.5">
-                  Your report has been received and processed by the AI engine. Responders have been
-                  notified.
+                <p className="text-xs text-green-200/60 mt-0.5 font-mono">
+                  Your report has been received and processed by the AI engine. Responders have been notified.
                 </p>
+                <div className="mt-2 text-[10px] font-mono text-green-400/80 animate-pulse">
+                  Auto-redirecting to RAG Chat for immediate safety guidance in {countdown}s...
+                </div>
               </div>
             </motion.div>
 
@@ -782,18 +941,28 @@ export default function ReportingPage() {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-gray-800 px-5 py-3 flex items-center justify-between">
+              <div className="border-t border-gray-800 px-5 py-3 flex items-center justify-between gap-4">
                 <span className="text-[10px] text-gray-600 font-mono">
                   {new Date(createdIncident.timestamp).toLocaleString()}
                 </span>
-                <button
-                  id="submit-another-btn"
-                  type="button"
-                  onClick={resetForm}
-                  className="text-[10px] font-mono text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/60 px-3 py-1.5 rounded-md transition"
-                >
-                  + SUBMIT ANOTHER REPORT
-                </button>
+                <div className="flex gap-2.5">
+                  <button
+                    id="open-rag-chat-btn"
+                    type="button"
+                    onClick={redirectToChat}
+                    className="text-[10px] font-mono text-white bg-green-700 hover:bg-green-600 border border-transparent px-4 py-1.5 rounded-md transition font-bold shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse cursor-pointer"
+                  >
+                    💬 CHAT ASSISTANT NOW
+                  </button>
+                  <button
+                    id="submit-another-btn"
+                    type="button"
+                    onClick={resetForm}
+                    className="text-[10px] font-mono text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/60 px-3 py-1.5 rounded-md transition cursor-pointer"
+                  >
+                    + NEW REPORT
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

@@ -234,6 +234,9 @@ export default function VolunteerStandbyPage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [radius, setRadius] = useState(5);
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('Male');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // — Page state —
   const [volunteerId, setVolunteerId] = useState<string | null>(
@@ -264,12 +267,61 @@ export default function VolunteerStandbyPage() {
     }
   }, []);
 
-  // ── Load volunteer on mount if ID exists ─────────────────────────────────
+  // ── Auto-Detect Location ──────────────────────────────────────────────────
+  const detectLocation = useCallback(async () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    toast.info('Detecting live location...');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        setLat(String(latitude.toFixed(6)));
+        setLng(String(longitude.toFixed(6)));
+
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          toast.success('Location detected.');
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+          );
+          const data = await res.json();
+          if (data.status === 'OK' && data.results?.[0]) {
+            const formatted = data.results[0].formatted_address;
+            setAddress(formatted);
+            toast.success('Location resolved using Google Maps API.');
+          } else {
+            setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+            toast.success('Location detected.');
+          }
+        } catch (err) {
+          setAddress(`Bengaluru, Karnataka (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+          toast.success('Location detected.');
+        }
+      },
+      (error) => {
+        toast.error(`Location detection failed: ${error.message}`);
+      }
+    );
+  }, [toast]);
+
+  // ── Load volunteer on mount or detect location ────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (volunteerId) {
       fetchVolunteer(volunteerId);
+    } else {
+      detectLocation();
     }
-  }, [volunteerId, fetchVolunteer]);
+  }, []);
 
   // ── Socket.IO real-time connection ────────────────────────────────────────
   useEffect(() => {
@@ -320,16 +372,25 @@ export default function VolunteerStandbyPage() {
       skills,
       equipment,
       notifyRadiusKm: radius,
+      age: age ? parseInt(age) : undefined,
+      gender: gender || undefined,
     };
 
     try {
-      const result = await citizenApi.registerAsVolunteer(payload);
-      localStorage.setItem(STORAGE_KEY, result.id);
-      setVolunteerId(result.id);
-      setVolunteer(result);
-      toast.success(`✓ Welcome, ${result.name}! You are now registered as a volunteer.`);
+      if (isEditingProfile && volunteer) {
+        const result = await citizenApi.updateVolunteerProfile(volunteer.id, payload);
+        setVolunteer(result);
+        setIsEditingProfile(false);
+        toast.success('✓ Your volunteer profile has been updated.');
+      } else {
+        const result = await citizenApi.registerAsVolunteer(payload);
+        localStorage.setItem(STORAGE_KEY, result.id);
+        setVolunteerId(result.id);
+        setVolunteer(result);
+        toast.success(`✓ Welcome, ${result.name}! You are now registered as a volunteer.`);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Registration failed. Try again.';
+      const msg = err instanceof Error ? err.message : 'Action failed. Try again.';
       setRegError(msg);
       toast.error(msg);
     } finally {
@@ -362,11 +423,32 @@ export default function VolunteerStandbyPage() {
     }
   };
 
+  // ── Edit Profile ─────────────────────────────────────────────────────────
+  const handleEditProfile = () => {
+    if (!volunteer) return;
+    setName(volunteer.name);
+    setPhone(volunteer.phone);
+    setAddress(volunteer.location.address);
+    setLat(String(volunteer.location.lat));
+    setLng(String(volunteer.location.lng));
+    setSkills(volunteer.skills);
+    setEquipment(volunteer.equipment);
+    setRadius(volunteer.notifyRadiusKm);
+    setAge(volunteer.age ? String(volunteer.age) : '');
+    setGender(volunteer.gender || 'Male');
+    setIsEditingProfile(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingProfile(false);
+  };
+
   // ── Deregister (reset) ───────────────────────────────────────────────────
   const handleDeregister = () => {
     localStorage.removeItem(STORAGE_KEY);
     setVolunteerId(null);
     setVolunteer(null);
+    setIsEditingProfile(false);
     socketRef.current?.disconnect();
   };
 
@@ -412,7 +494,7 @@ export default function VolunteerStandbyPage() {
         )}
 
         {/* ── REGISTRATION FORM ─────────────────────────────────────────────── */}
-        {!volunteerId && !isLoading && (
+        {(!volunteerId || isEditingProfile) && !isLoading && (
           <motion.form
             key="register"
             initial={{ opacity: 0, y: 20 }}
@@ -486,14 +568,53 @@ export default function VolunteerStandbyPage() {
                     />
                   </div>
                 </div>
+                <div>
+                  <label className="text-[10px] text-gray-600 font-mono mb-1 block">AGE</label>
+                  <input
+                    id="volunteer-age"
+                    type="number"
+                    min="18"
+                    max="100"
+                    placeholder="25"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    required
+                    className="w-full bg-[#0B1220] border border-gray-700 text-white text-sm rounded-lg px-3 py-2.5 placeholder:text-gray-600 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/30 transition font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-600 font-mono mb-1 block">GENDER</label>
+                  <div className="relative">
+                    <select
+                      id="volunteer-gender"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full bg-[#0B1220] border border-gray-700 text-white text-sm font-mono rounded-lg px-3 py-2.5 appearance-none focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/30 transition"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Non-Binary">Non-Binary</option>
+                      <option value="Prefer Not to Say">Prefer Not to Say</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Location */}
             <div className="bg-[#111827] border border-gray-800 rounded-xl p-4 space-y-3">
-              <label className="text-[10px] font-mono text-gray-500 tracking-widest uppercase flex items-center gap-2">
-                <MapPin className="w-3 h-3" /> Your Location
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-mono text-gray-500 tracking-widest uppercase flex items-center gap-2">
+                  <MapPin className="w-3 h-3" /> Your Location
+                </label>
+                <button
+                  type="button"
+                  onClick={detectLocation}
+                  className="flex items-center gap-1.5 text-[9px] font-mono bg-[#0f2416] hover:bg-[#163520] border border-green-800/40 text-green-400 hover:text-green-300 px-2 py-1 rounded transition cursor-pointer"
+                >
+                  📍 AUTO-DETECT
+                </button>
+              </div>
               <input
                 id="volunteer-address"
                 type="text"
@@ -580,19 +701,28 @@ export default function VolunteerStandbyPage() {
             >
               {isRegistering ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> REGISTERING…
+                  <Loader2 className="w-4 h-4 animate-spin" /> {isEditingProfile ? 'UPDATING…' : 'REGISTERING…'}
                 </>
               ) : (
                 <>
-                  <ShieldAlert className="w-4 h-4" /> JOIN VOLUNTEER NETWORK
+                  <ShieldAlert className="w-4 h-4" /> {isEditingProfile ? 'SAVE PROFILE CHANGES' : 'JOIN VOLUNTEER NETWORK'}
                 </>
               )}
             </motion.button>
+            {isEditingProfile && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="w-full text-center py-3 border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white font-mono text-xs rounded-xl transition cursor-pointer"
+              >
+                CANCEL EDITING
+              </button>
+            )}
           </motion.form>
         )}
 
         {/* ── STANDBY DASHBOARD ─────────────────────────────────────────────── */}
-        {volunteer && !isLoading && (
+        {volunteer && !isEditingProfile && !isLoading && (
           <motion.div
             key="dashboard"
             initial={{ opacity: 0, y: 20 }}
@@ -626,6 +756,13 @@ export default function VolunteerStandbyPage() {
                     <p className="text-xs text-gray-500 font-mono flex items-center gap-1.5 mt-0.5">
                       <MapPin className="w-3 h-3" /> {volunteer.location.address}
                     </p>
+                    {(volunteer.age || volunteer.gender) && (
+                      <p className="text-[10px] text-gray-500 font-mono flex items-center gap-1.5 mt-0.5">
+                        <span>Age: {volunteer.age ?? 'N/A'}</span>
+                        <span>·</span>
+                        <span>Gender: {volunteer.gender ?? 'N/A'}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -688,15 +825,25 @@ export default function VolunteerStandbyPage() {
                     id="refresh-volunteer-btn"
                     type="button"
                     onClick={() => fetchVolunteer(volunteer.id)}
-                    className="text-[10px] font-mono text-gray-500 hover:text-green-400 transition flex items-center gap-1"
+                    className="text-[10px] font-mono text-gray-500 hover:text-green-400 transition flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCw className="w-3 h-3" /> REFRESH
                   </button>
+                  <span className="text-gray-700">|</span>
+                  <button
+                    id="edit-profile-btn"
+                    type="button"
+                    onClick={handleEditProfile}
+                    className="text-[10px] font-mono text-gray-500 hover:text-blue-400 transition cursor-pointer"
+                  >
+                    EDIT PROFILE
+                  </button>
+                  <span className="text-gray-700">|</span>
                   <button
                     id="deregister-btn"
                     type="button"
                     onClick={handleDeregister}
-                    className="text-[10px] font-mono text-gray-600 hover:text-red-400 transition"
+                    className="text-[10px] font-mono text-gray-600 hover:text-red-400 transition cursor-pointer"
                   >
                     LEAVE NETWORK
                   </button>

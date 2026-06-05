@@ -73,14 +73,25 @@ Return ONLY valid JSON. No markdown fences, no explanation, no preamble.
 `.trim();
 
     if (imageBase64) {
+      let mimeType = 'image/jpeg';
+      let cleanBase64 = imageBase64;
+      if (imageBase64.includes(';base64,')) {
+        const parts = imageBase64.split(';base64,');
+        const match = parts[0].match(/data:(.*?)$/);
+        if (match && match[1]) {
+          mimeType = match[1];
+        }
+        cleanBase64 = parts[1];
+      }
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [
           { text: prompt },
           {
             inlineData: {
-              mimeType: 'image/jpeg',
-              data: imageBase64,
+              mimeType,
+              data: cleanBase64,
             },
           },
         ] as any,

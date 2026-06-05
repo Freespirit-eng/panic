@@ -76,6 +76,7 @@ export class IncidentService {
     };
 
     db.incidents.unshift(newIncident); // Prepend so new items show first
+    db.save();
 
     // Socket emission
     socketService.emitIncidentCreated(newIncident);
@@ -92,6 +93,7 @@ export class IncidentService {
     const incident = await this.getIncidentById(id);
     
     Object.assign(incident, data);
+    db.save();
     
     socketService.emitIncidentUpdated(incident);
     return incident;
@@ -103,6 +105,7 @@ export class IncidentService {
       throw new AppError(`Incident with ID ${id} not found`, 404);
     }
     db.incidents.splice(index, 1);
+    db.save();
     socketService.emitStatsUpdate();
   }
 
@@ -113,6 +116,7 @@ export class IncidentService {
     // Mark source as duplicate of target
     source.verification = 'Flagged';
     target.duplicates += 1;
+    db.save();
 
     socketService.emitIncidentUpdated(target);
     socketService.emitIncidentMerged(source.id, target.id);

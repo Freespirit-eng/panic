@@ -4,11 +4,13 @@ import {
   Activity, AlertTriangle, Users, Building2,
   CheckCircle2, Wifi, WifiOff, TrendingUp, TrendingDown,
   MapPin, Clock, Shield, ShieldAlert, ShieldCheck,
-  BarChart3, PieChart, Flame, Droplets, Zap, Construction, Building
+  BarChart3, PieChart, Flame, Droplets, Zap, Construction, Building,
+  Radio
 } from 'lucide-react';
 import { commanderApi } from '../services/commanderApi';
 import { useSocket } from '../hooks/useSocket';
-import { Incident } from '../../shared/types';
+import { Incident, Volunteer } from '../../shared/types';
+import { useToast } from '../hooks/useToast';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -47,6 +49,18 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
 const SEVERITY_COLORS: Record<string, string> = {
   Critical: '#ef4444', High: '#f97316', Medium: '#eab308', Low: '#22c55e'
 };
+
+function getHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 const MISSION_STATUS_COLORS: Record<string, string> = {
   'Awaiting Assignment': '#6b7280',
@@ -258,6 +272,14 @@ export default function DashboardPage() {
   const [newIncidentFlash, setNewIncidentFlash] = useState<Incident | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [totalVolunteers, setTotalVolunteers] = useState(0);
+  const [nearestVolunteer, setNearestVolunteer] = useState<Volunteer | null>(null);
+  const [nearestDistance, setNearestDistance] = useState<number | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
+  const { addToast } = useToast();
+
   // Load initial data
   useEffect(() => {
     commanderApi.getIncidentStats()
@@ -277,6 +299,13 @@ export default function DashboardPage() {
       .then(s => setAnalytics({ byType: s.byType ?? {}, byMissionStatus: s.byMissionStatus ?? {} }))
       .catch(() => {});
 
+    commanderApi.getVolunteers()
+      .then(vols => {
+        setVolunteers(vols);
+        setTotalVolunteers(vols.length);
+      })
+      .catch(() => {});
+
     // Health checks
     fetch('http://localhost:3000/api/incidents/stats')
       .then(r => setBackendOk(r.ok))
@@ -286,6 +315,39 @@ export default function DashboardPage() {
       .then(r => setAiOk(r.ok))
       .catch(() => setAiOk(false));
   }, []);
+
+  useEffect(() => {
+    if (!selectedIncident) {
+      setNearestVolunteer(null);
+      setNearestDistance(null);
+      return;
+    }
+    const available = volunteers.filter(v => v.status === 'Available');
+    if (available.length === 0) {
+      setNearestVolunteer(null);
+      setNearestDistance(null);
+      return;
+    }
+
+    let minVol: Volunteer | null = null;
+    let minDistance = Infinity;
+
+    available.forEach(v => {
+      const dist = getHaversineDistance(
+        selectedIncident.location.lat,
+        selectedIncident.location.lng,
+        v.location.lat,
+        v.location.lng
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+        minVol = v;
+      }
+    });
+
+    setNearestVolunteer(minVol);
+    setNearestDistance(minVol ? minDistance : null);
+  }, [selectedIncident, volunteers]);
 
   const handleStatsUpdate = useCallback((data: unknown) => {
     const s = data as typeof kpi;
@@ -304,14 +366,25 @@ export default function DashboardPage() {
     setBreachCount(c => c + 1);
   }, []);
 
+  const handleVolunteerRegistered = useCallback((volunteer: unknown) => {
+    const vol = volunteer as Volunteer;
+    setVolunteers(prev => {
+      if (prev.some(v => v.id === vol.id)) return prev;
+      return [...prev, vol];
+    });
+    setTotalVolunteers(prev => prev + 1);
+    addToast('mission', 'New Volunteer Standby', `${vol.name} is available for dispatch.`);
+  }, [addToast]);
+
   const socketRef = useSocket(
-    ['stats_update', 'incidents_feed', 'geofence_alerts'],
+    ['stats_update', 'incidents_feed', 'geofence_alerts', 'resource_positions'],
     {
       connect: () => setSocketConnected(true),
       disconnect: () => setSocketConnected(false),
       stats_update: handleStatsUpdate,
       incident_created: handleIncidentCreated,
       geofence_breached: handleGeofenceBreached,
+      volunteer_registered: handleVolunteerRegistered,
     }
   );
 
@@ -322,6 +395,86 @@ export default function DashboardPage() {
     }, 2000);
     return () => clearInterval(interval);
   }, [socketRef]);
+
+  const handleAssign = async () => {
+    if (!selectedIncident || !nearestVolunteer) return;
+    setIsAssigning(true);
+    try {
+      const updatedVol = await commanderApi.assignIncidentToVolunteer(nearestVolunteer.id, selectedIncident.id);
+      addToast('mission', 'Volunteer Dispatched', `Task assigned to ${updatedVol.name}.`);
+      setVolunteers(prev => prev.map(v => v.id === updatedVol.id ? updatedVol : v));
+    } catch (err) {
+      console.error(err);
+      addToast('critical', 'Dispatch Failed', 'Failed to assign task to volunteer.');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleResolve = async () => {
+    if (!selectedIncident) return;
+    setIsResolving(true);
+    try {
+      await commanderApi.deleteIncident(selectedIncident.id);
+      addToast('mission', 'Incident Resolved', `Incident ${selectedIncident.id} has been resolved.`);
+      setRecentIncidents(prev => prev.filter(inc => inc.id !== selectedIncident.id));
+      setSelectedIncident(null);
+      commanderApi.getIncidentStats()
+        .then(s => setKpi({
+          activeIncidents: s.activeIncidents,
+          criticalEmergencies: s.criticalEmergencies,
+          respondersDeployed: s.respondersDeployed,
+          citizensImpacted: s.citizensImpacted,
+        }))
+        .catch(() => {});
+      commanderApi.getAnalyticsSummary()
+        .then(s => setAnalytics({ byType: s.byType ?? {}, byMissionStatus: s.byMissionStatus ?? {} }))
+        .catch(() => {});
+    } catch (err) {
+      console.error(err);
+      addToast('critical', 'Resolution Failed', 'Failed to resolve the incident.');
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
+  const [isDispatchingProfessional, setIsDispatchingProfessional] = useState<string | null>(null);
+
+  const handleProfessionalDispatch = async (team: string) => {
+    if (!selectedIncident) return;
+    setIsDispatchingProfessional(team);
+    try {
+      const payload = {
+        incidentId: selectedIncident.id,
+        location: selectedIncident.location,
+        type: selectedIncident.type,
+        severity: selectedIncident.severity,
+        recommendedTeam: `${team} Dispatch`,
+        assignedTeam: `${team} ${Math.floor(Math.random() * 90 + 10)}`,
+        status: 'Dispatched' as const,
+        eta: '8 mins',
+        summary: `Dispatched ${team} to ${selectedIncident.location.address} for a ${selectedIncident.severity} ${selectedIncident.type} emergency.`,
+        aiFindings: `Priority Score: ${selectedIncident.priorityScore}/100. People affected: ${selectedIncident.peopleDetected}.`,
+        riskAssessment: `Severity is ${selectedIncident.severity}. Direct command line dispatch.`,
+        affectedPopulation: selectedIncident.peopleDetected,
+        requiredResources: team === 'Fire Brigade' ? ['Fire Hoses', 'Aerosol Extinguishers'] 
+                         : team === 'Ambulance Unit' ? ['AED', 'Oxygen Tanks', 'Trauma Kit']
+                         : team === 'Rescue Squad' ? ['Zodiac Boat', 'Life Vests', 'Ropes']
+                         : ['Traffic Cones', 'Barricades'],
+        recommendedResponsePlan: [`Deploy ${team} immediately to coordinate on-scene response.`],
+        timeline: [
+          { timestamp: new Date().toISOString(), event: `${team} dispatched from EOC Command.` }
+        ]
+      };
+      await commanderApi.createMission(payload);
+      addToast('mission', 'Professional Dispatched', `${team} is en route.`);
+    } catch (err) {
+      console.error(err);
+      addToast('critical', 'Dispatch Failed', `Failed to dispatch ${team}.`);
+    } finally {
+      setIsDispatchingProfessional(null);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -448,13 +601,133 @@ export default function DashboardPage() {
                     <span className="text-gray-500">Priority: <span className="text-white font-bold">{selectedIncident.priorityScore}/100</span></span>
                   </div>
                   <p className="text-gray-400 leading-relaxed">{selectedIncident.recommendedAction}</p>
-                  <div className="flex gap-4 text-gray-500 items-center font-mono text-[10px] pt-1">
+                  <div className="flex gap-4 text-gray-500 items-center font-mono text-[10px] pt-1 pb-1">
                     <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {selectedIncident.peopleDetected} people</span>
                     <span className="flex items-center gap-1"><span className="text-[10px] text-gray-600 uppercase">Minors:</span> {selectedIncident.childrenDetected}</span>
                     {selectedIncident.waterLevel !== 'N/A' && (
                       <span className="flex items-center gap-1"><Droplets className="w-3.5 h-3.5 text-blue-500" /> Water: {selectedIncident.waterLevel}</span>
                     )}
                   </div>
+
+                  {/* Dispatch & Resolution Section */}
+                  <hr className="border-gray-800 my-2" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {/* Nearest Volunteer Block */}
+                    <div className="bg-gray-950/45 border border-gray-800 rounded-lg p-3 space-y-2 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-500 uppercase tracking-wider">
+                          <Users className="w-3 h-3 text-blue-400" />
+                          <span>Nearest Volunteer</span>
+                        </div>
+                        {nearestVolunteer ? (
+                          <div className="space-y-1">
+                            <div className="flex items-start justify-between gap-1">
+                              <span className="font-bold text-white font-mono truncate">{nearestVolunteer.name}</span>
+                              <span className="text-[9px] font-mono px-1 py-0.2 rounded border text-green-400 bg-green-950/50 border-green-900/60 shrink-0">
+                                {nearestVolunteer.status}
+                              </span>
+                            </div>
+                            <p className="text-gray-500 text-[10px] font-mono">
+                              {nearestDistance !== null ? `${nearestDistance.toFixed(2)} km away` : 'Calculating...'}
+                            </p>
+                            
+                            {/* Skills, Age, Gender Tags */}
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {nearestVolunteer.skills.slice(0, 2).map((skill, idx) => (
+                                <span key={idx} className="text-[9px] font-mono text-gray-400 bg-gray-900 px-1 py-0.2 rounded border border-gray-800">
+                                  {skill}
+                                </span>
+                              ))}
+                              {nearestVolunteer.age && (
+                                <span className="text-[9px] font-mono text-blue-400 bg-blue-950/20 px-1 py-0.2 rounded border border-blue-900/30">
+                                  {nearestVolunteer.age} yrs
+                                </span>
+                              )}
+                              {nearestVolunteer.gender && (
+                                <span className="text-[9px] font-mono text-pink-400 bg-pink-950/20 px-1 py-0.2 rounded border border-pink-900/30">
+                                  {nearestVolunteer.gender.split('-')[0]}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-600 font-mono text-[10px] py-2">
+                            No available standby volunteers
+                          </p>
+                        )}
+                      </div>
+
+                      {nearestVolunteer && (
+                        <button
+                          type="button"
+                          onClick={handleAssign}
+                          disabled={isAssigning}
+                          className="w-full mt-2 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800/40 disabled:text-gray-500 text-white font-mono text-[10px] font-bold py-1.5 px-3 rounded-md transition-colors cursor-pointer"
+                        >
+                          <Radio className="w-3 h-3 animate-pulse" />
+                          {isAssigning ? 'DISPATCHING...' : 'DISPATCH TASK'}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Resolution Block */}
+                    <div className="flex flex-col justify-between bg-gray-950/45 border border-gray-800 rounded-lg p-3 space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-500 uppercase tracking-wider">
+                          <CheckCircle2 className="w-3 h-3 text-green-400" />
+                          <span>Close Incident</span>
+                        </div>
+                        <p className="text-gray-500 text-[10px] font-mono leading-relaxed">
+                          Close case and archive thread once hazard is mitigated.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleResolve}
+                        disabled={isResolving}
+                        className="w-full flex items-center justify-center gap-1.5 border border-green-500/60 hover:bg-green-500/15 text-green-400 font-mono text-[10px] font-bold py-1.5 px-3 rounded-md transition-colors cursor-pointer mt-auto"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
+                        {isResolving ? 'RESOLVING...' : 'RESOLVE INCIDENT'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Professional Dispatch Block */}
+                  {(selectedIncident.severity === 'Critical' || selectedIncident.severity === 'High') && (
+                    <div className="pt-1">
+                      <hr className="border-gray-800 my-2" />
+                      <div className="bg-gray-950/45 border border-red-900/30 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono text-red-400 font-bold uppercase tracking-wider">
+                          <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-pulse" />
+                          <span>Professional Emergency Dispatch Required</span>
+                        </div>
+                        <p className="text-gray-500 text-[10px] font-mono leading-relaxed pb-1">
+                          Severe incident detected. Dispatch professional emergency responder units immediately.
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { team: 'Ambulance Unit', label: 'Ambulance', icon: '🚑', color: 'border-red-500/40 text-red-400 bg-red-950/20 hover:bg-red-950/45' },
+                            { team: 'Fire Brigade', label: 'Fire Brigade', icon: '🚒', color: 'border-orange-500/40 text-orange-400 bg-orange-950/20 hover:bg-orange-950/45' },
+                            { team: 'Rescue Squad', label: 'Rescue Team', icon: '🚁', color: 'border-blue-500/40 text-blue-400 bg-blue-950/20 hover:bg-blue-950/45' },
+                            { team: 'Police Squad', label: 'Police Patrol', icon: '🚓', color: 'border-gray-500/40 text-gray-400 bg-gray-950/20 hover:bg-gray-950/45' }
+                          ].map(opt => (
+                            <button
+                              key={opt.team}
+                              type="button"
+                              onClick={() => handleProfessionalDispatch(opt.team)}
+                              disabled={isDispatchingProfessional !== null}
+                              className={`flex flex-col sm:flex-row items-center justify-center gap-1 border rounded px-2 py-2 text-[9px] font-bold font-mono transition-colors cursor-pointer disabled:opacity-50 ${opt.color}`}
+                            >
+                              <span>{opt.icon}</span>
+                              <span className="truncate">{isDispatchingProfessional === opt.team ? 'SENDING...' : opt.label.toUpperCase()}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -478,6 +751,14 @@ export default function DashboardPage() {
               {breachCount}
             </p>
             <p className="text-xs text-gray-600 mt-1">since session start</p>
+          </div>
+
+          <div className="mt-3 p-3 bg-gray-900 rounded-lg">
+            <p className="text-xs font-mono text-gray-500 mb-1">TOTAL ACTIVE VOLUNTEERS</p>
+            <p className="text-2xl font-black font-mono text-blue-400">
+              <CountUp target={totalVolunteers} />
+            </p>
+            <p className="text-xs text-gray-600 mt-1">registered in system</p>
           </div>
 
           <div className="mt-3 p-3 bg-blue-950/30 border border-blue-900/40 rounded-lg">

@@ -1,0 +1,1135 @@
+{
+  "incidents": [
+    {
+      "id": "INC-001",
+      "type": "Road Collapse",
+      "severity": "High",
+      "confidence": 89,
+      "location": {
+        "lat": 12.97760368002915,
+        "lng": 77.59603951970756,
+        "address": "MG Road - Sector B, Bengaluru"
+      },
+      "timestamp": "2026-06-05T22:15:06.394Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 9,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 53,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 3"
+      ]
+    },
+    {
+      "id": "INC-002",
+      "type": "Fire",
+      "severity": "Medium",
+      "confidence": 96,
+      "location": {
+        "lat": 12.98874873765516,
+        "lng": 77.5989098507348,
+        "address": "Indiranagar - Sector C, Bengaluru"
+      },
+      "timestamp": "2026-06-05T21:55:06.395Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 7,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 43,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 0"
+      ]
+    },
+    {
+      "id": "INC-003",
+      "type": "Earthquake",
+      "severity": "Low",
+      "confidence": 92,
+      "location": {
+        "lat": 12.928851756993529,
+        "lng": 77.62210385224921,
+        "address": "Koramangala - Sector D, Bengaluru"
+      },
+      "timestamp": "2026-06-05T21:35:06.395Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 40,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 4"
+      ]
+    },
+    {
+      "id": "INC-004",
+      "type": "Building Damage",
+      "severity": "Critical",
+      "confidence": 87,
+      "location": {
+        "lat": 12.934886352351766,
+        "lng": 77.67826134147272,
+        "address": "Bellandur - Sector E, Bengaluru"
+      },
+      "timestamp": "2026-06-05T21:15:06.395Z",
+      "verification": "Verified",
+      "duplicates": 0,
+      "peopleDetected": 9,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 95,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 4"
+      ]
+    },
+    {
+      "id": "INC-005",
+      "type": "Flood",
+      "severity": "High",
+      "confidence": 87,
+      "location": {
+        "lat": 13.032583371165092,
+        "lng": 77.59085332679633,
+        "address": "Hebbal - Sector F, Bengaluru"
+      },
+      "timestamp": "2026-06-05T20:55:06.395Z",
+      "verification": "Flagged",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 2,
+      "waterLevel": "Medium",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 45,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 8"
+      ]
+    },
+    {
+      "id": "INC-006",
+      "type": "Road Collapse",
+      "severity": "Medium",
+      "confidence": 84,
+      "location": {
+        "lat": 12.959031215326029,
+        "lng": 77.5471052598359,
+        "address": "Jayanagar - Sector A, Bengaluru"
+      },
+      "timestamp": "2026-06-05T20:35:06.395Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 41,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 4"
+      ]
+    },
+    {
+      "id": "INC-007",
+      "type": "Fire",
+      "severity": "Low",
+      "confidence": 80,
+      "location": {
+        "lat": 12.997939318331968,
+        "lng": 77.5846290348636,
+        "address": "Malleshwaram - Sector B, Bengaluru"
+      },
+      "timestamp": "2026-06-05T20:15:06.395Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 6,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 49,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 2"
+      ]
+    },
+    {
+      "id": "INC-008",
+      "type": "Earthquake",
+      "severity": "Critical",
+      "confidence": 96,
+      "location": {
+        "lat": 12.980650697134118,
+        "lng": 77.70456147709442,
+        "address": "Whitefield - Sector C, Bengaluru"
+      },
+      "timestamp": "2026-06-05T19:55:06.395Z",
+      "verification": "Verified",
+      "duplicates": 2,
+      "peopleDetected": 3,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 85,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 6"
+      ]
+    },
+    {
+      "id": "INC-009",
+      "type": "Building Damage",
+      "severity": "High",
+      "confidence": 77,
+      "location": {
+        "lat": 12.847734047274578,
+        "lng": 77.66107765855433,
+        "address": "Electronic City - Sector D, Bengaluru"
+      },
+      "timestamp": "2026-06-05T19:35:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 11,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 42,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 5"
+      ]
+    },
+    {
+      "id": "INC-010",
+      "type": "Flood",
+      "severity": "Medium",
+      "confidence": 76,
+      "location": {
+        "lat": 12.92232529895008,
+        "lng": 77.60747154069992,
+        "address": "BTM Layout - Sector E, Bengaluru"
+      },
+      "timestamp": "2026-06-05T19:15:06.396Z",
+      "verification": "Flagged",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 3,
+      "waterLevel": "Medium",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 42,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 9"
+      ]
+    },
+    {
+      "id": "INC-011",
+      "type": "Road Collapse",
+      "severity": "Low",
+      "confidence": 93,
+      "location": {
+        "lat": 12.97163939439314,
+        "lng": 77.60077892013257,
+        "address": "MG Road - Sector F, Bengaluru"
+      },
+      "timestamp": "2026-06-05T18:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 11,
+      "childrenDetected": 1,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 22,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 9"
+      ]
+    },
+    {
+      "id": "INC-012",
+      "type": "Fire",
+      "severity": "Critical",
+      "confidence": 86,
+      "location": {
+        "lat": 12.984891196849256,
+        "lng": 77.60665454897436,
+        "address": "Indiranagar - Sector A, Bengaluru"
+      },
+      "timestamp": "2026-06-05T18:35:06.396Z",
+      "verification": "Verified",
+      "duplicates": 0,
+      "peopleDetected": 4,
+      "childrenDetected": 1,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 71,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 6"
+      ]
+    },
+    {
+      "id": "INC-013",
+      "type": "Earthquake",
+      "severity": "High",
+      "confidence": 96,
+      "location": {
+        "lat": 12.92042364615104,
+        "lng": 77.62974688973064,
+        "address": "Koramangala - Sector B, Bengaluru"
+      },
+      "timestamp": "2026-06-05T18:15:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 8,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 57,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 2"
+      ]
+    },
+    {
+      "id": "INC-014",
+      "type": "Building Damage",
+      "severity": "Medium",
+      "confidence": 98,
+      "location": {
+        "lat": 12.942570393567262,
+        "lng": 77.68321767509889,
+        "address": "Bellandur - Sector C, Bengaluru"
+      },
+      "timestamp": "2026-06-05T17:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 27,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 9"
+      ]
+    },
+    {
+      "id": "INC-015",
+      "type": "Flood",
+      "severity": "Low",
+      "confidence": 81,
+      "location": {
+        "lat": 13.032178289358901,
+        "lng": 77.59883087443235,
+        "address": "Hebbal - Sector D, Bengaluru"
+      },
+      "timestamp": "2026-06-05T17:35:06.396Z",
+      "verification": "Flagged",
+      "duplicates": 0,
+      "peopleDetected": 9,
+      "childrenDetected": 0,
+      "waterLevel": "High",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 21,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 7"
+      ]
+    },
+    {
+      "id": "INC-016",
+      "type": "Road Collapse",
+      "severity": "Critical",
+      "confidence": 89,
+      "location": {
+        "lat": 12.950513358077067,
+        "lng": 77.55813936869153,
+        "address": "Jayanagar - Sector E, Bengaluru"
+      },
+      "timestamp": "2026-06-05T17:15:06.396Z",
+      "verification": "Verified",
+      "duplicates": 1,
+      "peopleDetected": 4,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 74,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 2"
+      ]
+    },
+    {
+      "id": "INC-017",
+      "type": "Fire",
+      "severity": "High",
+      "confidence": 93,
+      "location": {
+        "lat": 13.001281985480553,
+        "lng": 77.58058199163078,
+        "address": "Malleshwaram - Sector F, Bengaluru"
+      },
+      "timestamp": "2026-06-05T16:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 9,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 53,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 2"
+      ]
+    },
+    {
+      "id": "INC-018",
+      "type": "Earthquake",
+      "severity": "Medium",
+      "confidence": 81,
+      "location": {
+        "lat": 12.96966960606202,
+        "lng": 77.70300258712781,
+        "address": "Whitefield - Sector A, Bengaluru"
+      },
+      "timestamp": "2026-06-05T16:35:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 5,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 35,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 7"
+      ]
+    },
+    {
+      "id": "INC-019",
+      "type": "Building Damage",
+      "severity": "Low",
+      "confidence": 80,
+      "location": {
+        "lat": 12.842899052435486,
+        "lng": 77.66561397893963,
+        "address": "Electronic City - Sector B, Bengaluru"
+      },
+      "timestamp": "2026-06-05T16:15:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 4,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 38,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 6"
+      ]
+    },
+    {
+      "id": "INC-020",
+      "type": "Flood",
+      "severity": "Critical",
+      "confidence": 75,
+      "location": {
+        "lat": 12.920271930009159,
+        "lng": 77.61265898825144,
+        "address": "BTM Layout - Sector C, Bengaluru"
+      },
+      "timestamp": "2026-06-05T15:55:06.396Z",
+      "verification": "Verified",
+      "duplicates": 0,
+      "peopleDetected": 7,
+      "childrenDetected": 1,
+      "waterLevel": "Medium",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 92,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 4"
+      ]
+    },
+    {
+      "id": "INC-021",
+      "type": "Road Collapse",
+      "severity": "High",
+      "confidence": 87,
+      "location": {
+        "lat": 12.97499165509599,
+        "lng": 77.60091805623897,
+        "address": "MG Road - Sector D, Bengaluru"
+      },
+      "timestamp": "2026-06-05T15:35:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 1,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 60,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 9"
+      ]
+    },
+    {
+      "id": "INC-022",
+      "type": "Fire",
+      "severity": "Medium",
+      "confidence": 79,
+      "location": {
+        "lat": 12.990276877959808,
+        "lng": 77.6124267088341,
+        "address": "Indiranagar - Sector E, Bengaluru"
+      },
+      "timestamp": "2026-06-05T15:15:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 1,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 44,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 1"
+      ]
+    },
+    {
+      "id": "INC-023",
+      "type": "Earthquake",
+      "severity": "Low",
+      "confidence": 82,
+      "location": {
+        "lat": 12.928055183697332,
+        "lng": 77.61976326535226,
+        "address": "Koramangala - Sector F, Bengaluru"
+      },
+      "timestamp": "2026-06-05T14:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 11,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 31,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 1"
+      ]
+    },
+    {
+      "id": "INC-024",
+      "type": "Building Damage",
+      "severity": "Critical",
+      "confidence": 79,
+      "location": {
+        "lat": 12.933013009438744,
+        "lng": 77.67270300964891,
+        "address": "Bellandur - Sector A, Bengaluru"
+      },
+      "timestamp": "2026-06-05T14:35:06.396Z",
+      "verification": "Verified",
+      "duplicates": 1,
+      "peopleDetected": 5,
+      "childrenDetected": 3,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 81,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 0"
+      ]
+    },
+    {
+      "id": "INC-025",
+      "type": "Flood",
+      "severity": "High",
+      "confidence": 90,
+      "location": {
+        "lat": 13.041666923481491,
+        "lng": 77.59724776531544,
+        "address": "Hebbal - Sector B, Bengaluru"
+      },
+      "timestamp": "2026-06-05T14:15:06.396Z",
+      "verification": "Flagged",
+      "duplicates": 0,
+      "peopleDetected": 7,
+      "childrenDetected": 3,
+      "waterLevel": "Medium",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 68,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 5"
+      ]
+    },
+    {
+      "id": "INC-026",
+      "type": "Road Collapse",
+      "severity": "Medium",
+      "confidence": 93,
+      "location": {
+        "lat": 12.95046561307304,
+        "lng": 77.55367397903603,
+        "address": "Jayanagar - Sector C, Bengaluru"
+      },
+      "timestamp": "2026-06-05T13:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 6,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 39,
+      "reasoning": [
+        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 3"
+      ]
+    },
+    {
+      "id": "INC-027",
+      "type": "Fire",
+      "severity": "Low",
+      "confidence": 94,
+      "location": {
+        "lat": 12.999224814606023,
+        "lng": 77.58273788376987,
+        "address": "Malleshwaram - Sector D, Bengaluru"
+      },
+      "timestamp": "2026-06-05T13:35:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Fire]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 24,
+      "reasoning": [
+        "High density zone alert triggered for [Fire] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 7"
+      ]
+    },
+    {
+      "id": "INC-028",
+      "type": "Earthquake",
+      "severity": "Critical",
+      "confidence": 87,
+      "location": {
+        "lat": 12.977556289314231,
+        "lng": 77.70190535646536,
+        "address": "Whitefield - Sector E, Bengaluru"
+      },
+      "timestamp": "2026-06-05T13:15:06.396Z",
+      "verification": "Verified",
+      "duplicates": 0,
+      "peopleDetected": 3,
+      "childrenDetected": 2,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Earthquake]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 63,
+      "reasoning": [
+        "High density zone alert triggered for [Earthquake] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 6"
+      ]
+    },
+    {
+      "id": "INC-029",
+      "type": "Building Damage",
+      "severity": "High",
+      "confidence": 82,
+      "location": {
+        "lat": 12.850628071704568,
+        "lng": 77.66075774597168,
+        "address": "Electronic City - Sector F, Bengaluru"
+      },
+      "timestamp": "2026-06-05T12:55:06.396Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 5,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "Standard response protocol for type [Building Damage]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 50,
+      "reasoning": [
+        "High density zone alert triggered for [Building Damage] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 7"
+      ]
+    },
+    {
+      "id": "INC-030",
+      "type": "Flood",
+      "severity": "Medium",
+      "confidence": 92,
+      "location": {
+        "lat": 12.919385454789117,
+        "lng": 77.61485755005727,
+        "address": "BTM Layout - Sector A, Bengaluru"
+      },
+      "timestamp": "2026-06-05T12:35:06.396Z",
+      "verification": "Flagged",
+      "duplicates": 0,
+      "peopleDetected": 8,
+      "childrenDetected": 3,
+      "waterLevel": "High",
+      "recommendedAction": "Standard response protocol for type [Flood]. Secure structural integrity and deploy zone monitors.",
+      "priorityScore": 25,
+      "reasoning": [
+        "High density zone alert triggered for [Flood] in Bengaluru urban area",
+        "Estimated casualties/affected counts detected by image analysis: 8"
+      ]
+    }
+  ],
+  "volunteers": [
+    {
+      "id": "VOL-001",
+      "name": "Arjun Sharma",
+      "phone": "+91-98451-00111",
+      "location": {
+        "lat": 12.9716,
+        "lng": 77.5946,
+        "address": "MG Road, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "First Aid",
+        "Search and Rescue",
+        "Radio Communications"
+      ],
+      "equipment": [
+        "4x4 Vehicle",
+        "First Aid Kit"
+      ],
+      "notifyRadiusKm": 5,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-002",
+      "name": "Priya Nair",
+      "phone": "+91-98452-00222",
+      "location": {
+        "lat": 12.9856,
+        "lng": 77.6064,
+        "address": "Indiranagar, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Paramedic",
+        "Triage Assessment",
+        "Crisis Counseling"
+      ],
+      "equipment": [
+        "Trauma Kit",
+        "Emergency Medical Station"
+      ],
+      "notifyRadiusKm": 8,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-003",
+      "name": "Suresh Babu",
+      "phone": "+91-98453-00333",
+      "location": {
+        "lat": 12.9279,
+        "lng": 77.6271,
+        "address": "Koramangala, Bengaluru"
+      },
+      "status": "On Mission",
+      "skills": [
+        "Debris Removal",
+        "Heavy Machinery",
+        "Structural Assessment"
+      ],
+      "equipment": [
+        "Chainsaw",
+        "Hydraulic Spreader"
+      ],
+      "notifyRadiusKm": 4,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-004",
+      "name": "Divya Menon",
+      "phone": "+91-98454-00444",
+      "location": {
+        "lat": 12.9352,
+        "lng": 77.6245,
+        "address": "HSR Layout, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Hazardous Materials",
+        "Structural Assessment",
+        "Fire Safety"
+      ],
+      "equipment": [
+        "Thermal Camera",
+        "HazMat Suit"
+      ],
+      "notifyRadiusKm": 6,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-005",
+      "name": "Rajan Pillai",
+      "phone": "+91-98455-00555",
+      "location": {
+        "lat": 13.0358,
+        "lng": 77.597,
+        "address": "Hebbal, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Tactical Navigation",
+        "Disaster Preparedness",
+        "Field Coordination"
+      ],
+      "equipment": [
+        "Survival Kit",
+        "Flashlight Array",
+        "Walkie-Talkie Set"
+      ],
+      "notifyRadiusKm": 7,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-006",
+      "name": "Kavitha Reddy",
+      "phone": "+91-98456-00666",
+      "location": {
+        "lat": 12.9165,
+        "lng": 77.6101,
+        "address": "BTM Layout, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Climbing",
+        "High-Angle Rescue",
+        "Rope Operations"
+      ],
+      "equipment": [
+        "Ropes & Harnesses",
+        "Carabiners"
+      ],
+      "notifyRadiusKm": 10,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-007",
+      "name": "Vikram Anand",
+      "phone": "+91-98457-00777",
+      "location": {
+        "lat": 13.0012,
+        "lng": 77.58,
+        "address": "Malleshwaram, Bengaluru"
+      },
+      "status": "Offline",
+      "skills": [
+        "Crisis Management",
+        "Drone Operations",
+        "Aerial Surveillance"
+      ],
+      "equipment": [
+        "Heavy Drone Response Rig",
+        "Satellite Uplink"
+      ],
+      "notifyRadiusKm": 15,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-008",
+      "name": "Sneha Iyer",
+      "phone": "+91-98458-00888",
+      "location": {
+        "lat": 12.955,
+        "lng": 77.5533,
+        "address": "Jayanagar, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Community Coordination",
+        "Triage Assessment",
+        "First Aid"
+      ],
+      "equipment": [
+        "Mobile Generators",
+        "Public Address System"
+      ],
+      "notifyRadiusKm": 5,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-009",
+      "name": "Karthik Subramanian",
+      "phone": "+91-98459-00999",
+      "location": {
+        "lat": 12.9762,
+        "lng": 77.7012,
+        "address": "Whitefield, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "IT & Communications",
+        "Disaster Logistics"
+      ],
+      "equipment": [
+        "Emergency Comms Server",
+        "Satellite Phone"
+      ],
+      "notifyRadiusKm": 8,
+      "receivedAlerts": []
+    },
+    {
+      "id": "VOL-010",
+      "name": "Ananya Krishnan",
+      "phone": "+91-98451-01010",
+      "location": {
+        "lat": 13.01,
+        "lng": 77.65,
+        "address": "Yelahanka, Bengaluru"
+      },
+      "status": "Available",
+      "skills": [
+        "Swiftwater Rescue",
+        "Marine Operations",
+        "Flood Response"
+      ],
+      "equipment": [
+        "Inflatable Rescue Boat",
+        "Diving Gear",
+        "Life Vests"
+      ],
+      "notifyRadiusKm": 12,
+      "receivedAlerts": []
+    }
+  ],
+  "missions": [
+    {
+      "id": "MIS-001",
+      "incidentId": "INC-001",
+      "location": {
+        "lat": 12.9352,
+        "lng": 77.6763,
+        "address": "Bellandur Lake Vicinity, Bengaluru"
+      },
+      "type": "Flood",
+      "severity": "Critical",
+      "recommendedTeam": "Swiftwater Unit A & Medical Support",
+      "assignedTeam": "BBMP Rescue Squad 3 & Paramedic Team 9",
+      "status": "Active",
+      "eta": "8 mins",
+      "summary": "Extracting 18 trapped civilians from residential areas near Bellandur Lake overflow zone.",
+      "aiFindings": "Lake overflow is fast-moving along Sarjapur Road. Highly recommend motorized rescue crafts and elevated access routes.",
+      "riskAssessment": "High risk of waterborne disease, structural debris collisions, and rapid water level rise.",
+      "affectedPopulation": 18,
+      "requiredResources": [
+        "Inflatable Rescue Boat",
+        "Life Vests",
+        "Water Purification Tablets",
+        "Trauma Kits"
+      ],
+      "recommendedResponsePlan": [
+        "Deploy inflatable rescue boat to Bellandur overflow hot zone.",
+        "Secure anchor lines to elevated structures near Sarjapur Road.",
+        "Extract children and elderly first from low-lying apartments.",
+        "Establish secondary triage point at Brookefield Mall grounds."
+      ],
+      "timeline": [
+        {
+          "timestamp": "2026-06-05T22:20:06.396Z",
+          "event": "Mission created via AI recommended response plan"
+        },
+        {
+          "timestamp": "2026-06-05T22:23:06.396Z",
+          "event": "BBMP Rescue Squad 3 dispatched to Bellandur location"
+        },
+        {
+          "timestamp": "2026-06-05T22:30:06.396Z",
+          "event": "Responders arrived on scene and launched inflatable rescue boat"
+        }
+      ]
+    },
+    {
+      "id": "MIS-002",
+      "incidentId": "INC-003",
+      "location": {
+        "lat": 12.9165,
+        "lng": 77.6101,
+        "address": "BTM Layout 2nd Stage, Bengaluru"
+      },
+      "type": "Road Collapse",
+      "severity": "High",
+      "recommendedTeam": "Civil Engineering Response Unit & Traffic Control",
+      "assignedTeam": "BBMP Infrastructure Team & Traffic Police",
+      "status": "Dispatched",
+      "eta": "12 mins",
+      "summary": "Road sinkhole on 80 Feet Road, BTM Layout, blocking major arterial route. 3 vehicles partially submerged.",
+      "aiFindings": "Sinkhole approximately 4m diameter. Likely caused by underground water main burst from recent flooding.",
+      "riskAssessment": "Risk of further collapse. Adjacent buildings may have compromised foundations.",
+      "affectedPopulation": 6,
+      "requiredResources": [
+        "Excavator",
+        "Traffic Cones",
+        "Tow Trucks",
+        "Structural Assessment Kit"
+      ],
+      "recommendedResponsePlan": [
+        "Immediately cordon off 100m radius around sinkhole.",
+        "Extract vehicles and occupants safely.",
+        "Assess structural integrity of adjacent buildings.",
+        "Contact BWSSB to identify and shut off burst water main."
+      ],
+      "timeline": [
+        {
+          "timestamp": "2026-06-05T22:27:06.396Z",
+          "event": "Sinkhole reported by citizen via app"
+        },
+        {
+          "timestamp": "2026-06-05T22:30:06.396Z",
+          "event": "BBMP Infrastructure Team dispatched from Jayanagar depot"
+        }
+      ]
+    }
+  ],
+  "broadcasts": [
+    {
+      "id": "BRD-001",
+      "type": "Evacuation Notice",
+      "title": "Flash Flood Evacuation - Bellandur & Sarjapur Road",
+      "message": "Severe lake overflow detected near Bellandur Lake. Residents of Sarjapur Road, Haralur Road, and Marathahalli Bridge vicinity must evacuate immediately to higher ground. Emergency shelter open at Brookefield Mall Ground Floor and BBMP Community Hall, Varthur.",
+      "area": "Bellandur, Sarjapur Road, Marathahalli (Bengaluru East)",
+      "timestamp": "2026-06-05T22:05:06.396Z",
+      "sentBy": "EOC Commander"
+    },
+    {
+      "id": "BRD-002",
+      "type": "Road Closure",
+      "title": "Road Closure - BTM Layout 80 Feet Road Sinkhole",
+      "message": "Major sinkhole detected on 80 Feet Road, BTM Layout 2nd Stage. Road closed between Silk Board Junction and BTM Bus Stop. Use Outer Ring Road or 100 Feet Road as alternate routes.",
+      "area": "BTM Layout, Jayanagar, Bengaluru South",
+      "timestamp": "2026-06-05T22:25:06.396Z",
+      "sentBy": "Traffic Control Unit"
+    }
+  ],
+  "geofences": [
+    {
+      "id": "GEO-001",
+      "name": "Bellandur Lake Flood Watch",
+      "location": {
+        "lat": 12.9352,
+        "lng": 77.6763,
+        "address": "Bellandur Lake, Bengaluru"
+      },
+      "radiusKm": 2,
+      "severityLimit": "High",
+      "status": "Breached"
+    },
+    {
+      "id": "GEO-002",
+      "name": "Electronic City Landslide Buffer",
+      "location": {
+        "lat": 12.8458,
+        "lng": 77.6638,
+        "address": "Electronic City Phase 1, Bengaluru"
+      },
+      "radiusKm": 1.5,
+      "severityLimit": "Critical",
+      "status": "Monitoring"
+    },
+    {
+      "id": "GEO-003",
+      "name": "MG Road Structural Watch",
+      "location": {
+        "lat": 12.9716,
+        "lng": 77.6121,
+        "address": "MG Road Metro Corridor, Bengaluru"
+      },
+      "radiusKm": 0.8,
+      "severityLimit": "All",
+      "status": "Normal"
+    },
+    {
+      "id": "GEO-004",
+      "name": "Hebbal Flyover Seismic Buffer",
+      "location": {
+        "lat": 13.0358,
+        "lng": 77.597,
+        "address": "Hebbal Flyover, Bengaluru"
+      },
+      "radiusKm": 3,
+      "severityLimit": "Critical",
+      "status": "Normal"
+    },
+    {
+      "id": "GEO-005",
+      "name": "Varthur Lake Overflow Zone",
+      "location": {
+        "lat": 12.9447,
+        "lng": 77.7511,
+        "address": "Varthur Lake, Bengaluru"
+      },
+      "radiusKm": 2.5,
+      "severityLimit": "Medium",
+      "status": "Monitoring"
+    }
+  ],
+  "chatMessages": [],
+  "knowledgeDocuments": [
+    {
+      "id": "KB-001",
+      "title": "Swiftwater Evacuation Guidelines",
+      "category": "Flood",
+      "content": "During sudden floods, avoid walking or driving through water. Even 6 inches of moving water can knock you down, and 2 feet of water can sweep a vehicle away. If trapped in a building, move to the roof and signal for help.",
+      "tags": [
+        "evacuation",
+        "flood",
+        "water-safety"
+      ]
+    },
+    {
+      "id": "KB-002",
+      "title": "Brush Fire Safety Distances",
+      "category": "Fire",
+      "content": "Ensure a defensible space of at least 30 feet around structures. If evacuating, close all windows, shut off gas main valves, and wear heavy, non-synthetic clothing to protect from embers.",
+      "tags": [
+        "wildfire",
+        "structure-defense",
+        "evacuation"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "USR-001",
+      "username": "operator_adam",
+      "email": "adam@panicsense.gov",
+      "role": "operator",
+      "passwordHash": "$2b$10$seededoperatorhashadam12345"
+    },
+    {
+      "id": "USR-002",
+      "username": "operator_eve",
+      "email": "eve@panicsense.gov",
+      "role": "operator",
+      "passwordHash": "$2b$10$seededoperatorhasheve12345"
+    },
+    {
+      "id": "USR-003",
+      "username": "admin_root",
+      "email": "admin@panicsense.gov",
+      "role": "admin",
+      "passwordHash": "$2b$10$seededadminhashroot12345"
+    }
+  ]
+}

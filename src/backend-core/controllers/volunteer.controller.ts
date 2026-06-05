@@ -44,5 +44,15 @@ export const volunteerController = {
     const { id, alertId } = req.params;
     const volunteer = await volunteerService.acceptAlert(id, alertId);
     res.status(200).json({ success: true, data: volunteer });
+  }),
+
+  assignIncident: asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { incidentId } = req.body;
+    if (!incidentId) {
+      return res.status(400).json({ success: false, error: 'Incident ID is required' });
+    }
+    const volunteer = await volunteerService.assignIncident(id, incidentId);
+    res.status(200).json({ success: true, data: volunteer });
   })
 };

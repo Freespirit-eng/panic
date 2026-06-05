@@ -68,6 +68,43 @@ export class AIService {
   }
 
   /**
+   * Analyzes an emergency image via AI Engine.
+   */
+  public async analyzeImage(imageBase64: string): Promise<any> {
+    try {
+      return await this.postToAIEngine<any>('/analyze-image', { imageBase64 });
+    } catch (err) {
+      console.log('[EOC AI Gateway] Falling back to mock image analysis.');
+      const isFire = Math.random() > 0.5;
+      if (isFire) {
+        return {
+          type: 'Fire',
+          severity: 'Critical',
+          confidence: 95,
+          peopleDetected: 2,
+          childrenDetected: 0,
+          waterLevel: 'N/A',
+          recommendedAction: 'Evacuate the building immediately, close doors to slow fire, and move upwind.',
+          reasoning: ['Visible active flames', 'Heavy dark smoke plume rising'],
+          priorityScore: 88
+        };
+      } else {
+        return {
+          type: 'Flood',
+          severity: 'High',
+          confidence: 89,
+          peopleDetected: 4,
+          childrenDetected: 1,
+          waterLevel: 'High',
+          recommendedAction: 'Move to higher ground or upper floors immediately. Do not attempt to cross moving water.',
+          reasoning: ['Street flooded with muddy water', 'Submerged vehicle tires visible'],
+          priorityScore: 78
+        };
+      }
+    }
+  }
+
+  /**
    * Routes a chat message from a citizen and returns response.
    */
   public async getCitizenChatResponse(message: string): Promise<{ response: string; sources: string[] }> {

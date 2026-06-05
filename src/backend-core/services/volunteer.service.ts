@@ -1,5 +1,5 @@
 import { db } from '../database/db';
-import { Volunteer } from '../../shared/types';
+import { Volunteer, VolunteerAlertNotification } from '../../shared/types';
 import { AppError } from '../middleware/error.middleware';
 import { socketService } from './socket.service';
 
@@ -56,10 +56,13 @@ export class VolunteerService {
       skills: data.skills || [],
       equipment: data.equipment || [],
       notifyRadiusKm: data.notifyRadiusKm || 5,
-      receivedAlerts: []
+      receivedAlerts: [],
+      age: data.age,
+      gender: data.gender
     };
 
     db.volunteers.push(newVolunteer);
+    db.save();
     socketService.emitVolunteerRegistered(newVolunteer);
 
     return newVolunteer;
@@ -69,6 +72,7 @@ export class VolunteerService {
     const volunteer = await this.getVolunteerById(id);
     
     Object.assign(volunteer, data);
+    db.save();
     
     socketService.emitStatsUpdate();
     return volunteer;
@@ -102,6 +106,41 @@ export class VolunteerService {
     }
     alert.accepted = true;
     volunteer.status = 'On Mission';
+    db.save();
+    socketService.emitStatsUpdate();
+    return volunteer;
+  }
+
+  /**
+   * Assigns a specific incident to a volunteer.
+   */
+  public async assignIncident(volunteerId: string, incidentId: string): Promise<Volunteer> {
+    const volunteer = await this.getVolunteerById(volunteerId);
+    const incident = db.incidents.find(i => i.id === incidentId);
+    if (!incident) {
+      throw new AppError(`Incident with ID ${incidentId} not found`, 404);
+    }
+
+    const distance = getHaversineDistance(
+      incident.location.lat,
+      incident.location.lng,
+      volunteer.location.lat,
+      volunteer.location.lng
+    );
+
+    const alertNotification: VolunteerAlertNotification = {
+      id: `ALRT-${String(Date.now())}-${Math.floor(Math.random() * 1000)}`,
+      incidentId: incident.id,
+      title: `Dispatch Request: ${incident.type}`,
+      message: `Please assist with a ${incident.type} emergency at ${incident.location.address}.`,
+      distanceKm: parseFloat(distance.toFixed(2)),
+      timestamp: new Date().toISOString(),
+      severity: incident.severity,
+      accepted: false
+    };
+
+    volunteer.receivedAlerts.unshift(alertNotification);
+    db.save();
     socketService.emitStatsUpdate();
     return volunteer;
   }

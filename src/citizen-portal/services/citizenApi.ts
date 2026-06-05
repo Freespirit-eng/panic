@@ -30,6 +30,8 @@ export interface RegisterVolunteerRequest {
   skills: string[];
   equipment: string[];
   notifyRadiusKm: number;
+  age?: number;
+  gender?: string;
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -125,6 +127,8 @@ export const citizenApi = {
       equipment: data.equipment,
       notifyRadiusKm: data.notifyRadiusKm,
       status: 'Available',
+      age: data.age,
+      gender: data.gender,
     };
 
     const res = await fetch(`${BASE_URL}/volunteers`, {
@@ -134,6 +138,37 @@ export const citizenApi = {
     });
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to register volunteer');
+    return json.data as Volunteer;
+  },
+
+  /**
+   * PATCH /api/volunteers/:id
+   * Updates an existing volunteer profile.
+   */
+  updateVolunteerProfile: async (id: string, data: RegisterVolunteerRequest): Promise<Volunteer> => {
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      location: {
+        lat: data.lat,
+        lng: data.lng,
+        address: data.address ?? `${data.lat}, ${data.lng}`,
+      },
+      skills: data.skills,
+      equipment: data.equipment,
+      notifyRadiusKm: data.notifyRadiusKm,
+      status: 'Available',
+      age: data.age,
+      gender: data.gender,
+    };
+
+    const res = await fetch(`${BASE_URL}/volunteers/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error ?? 'Failed to update volunteer profile');
     return json.data as Volunteer;
   },
 
@@ -163,6 +198,21 @@ export const citizenApi = {
   },
 
   /**
+   * POST /api/rag/analyze-image
+   * Analyzes an uploaded image and extracts structured classification data.
+   */
+  analyzeImage: async (imageBase64: string): Promise<any> => {
+    const res = await fetch(`${BASE_URL}/rag/analyze-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64 }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error ?? 'Image analysis failed');
+    return json;
+  },
+
+  /**
    * POST /api/chat/citizen
    * Sends a message to the citizen AI assistant.
    */
@@ -175,6 +225,28 @@ export const citizenApi = {
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Chat request failed');
     return json.data as { response: string; sources: string[] };
+  },
+
+  /**
+   * GET /api/volunteers
+   * Fetches all registered volunteers.
+   */
+  getAllVolunteers: async (): Promise<Volunteer[]> => {
+    const res = await fetch(`${BASE_URL}/volunteers`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error ?? 'Failed to fetch volunteers');
+    return json.data as Volunteer[];
+  },
+
+  /**
+   * GET /api/missions
+   * Fetches all current missions.
+   */
+  getAllMissions: async (): Promise<any[]> => {
+    const res = await fetch(`${BASE_URL}/missions`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error ?? 'Failed to fetch missions');
+    return json.data as any[];
   },
 
   /**
