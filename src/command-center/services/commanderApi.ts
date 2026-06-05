@@ -112,7 +112,7 @@ export const commanderApi = {
     apiFetch<Volunteer[]>('/volunteers'),
 
   // ─── Analytics ──────────────────────────────────────────────────────────────
-  getAnalyticsSummary: (): Promise<{
+  getAnalyticsSummary: async (): Promise<{
     totalIncidents: number;
     activeIncidents: number;
     criticalEmergencies: number;
@@ -123,7 +123,45 @@ export const commanderApi = {
     byVerification: Record<string, number>;
     byMissionStatus: Record<string, number>;
     byType: Record<string, number>;
-  }> => apiFetch('/analytics/summary'),
+  }> => {
+    const raw = await apiFetch<any>('/analytics/summary');
+    const kpi = raw.kpi || {};
+    const breakdowns = raw.breakdowns || {};
+    const severity = breakdowns.severityBreakdown || {};
+    const verification = breakdowns.verificationBreakdown || {};
+    const mission = breakdowns.missionStatusBreakdown || {};
+    const type = breakdowns.incidentTypeBreakdown || {};
+
+    const totalIncidents = Object.values(severity).reduce((a: any, b: any) => a + b, 0) as number;
+
+    return {
+      totalIncidents,
+      activeIncidents: kpi.activeIncidents ?? 0,
+      criticalEmergencies: kpi.criticalEmergencies ?? 0,
+      respondersDeployed: kpi.respondersDeployed ?? 0,
+      citizensImpacted: kpi.citizensImpacted ?? 0,
+      aiVerifiedReports: verification.Verified ?? 0,
+      bySeverity: {
+        Critical: severity.Critical ?? 0,
+        High: severity.High ?? 0,
+        Medium: severity.Medium ?? 0,
+        Low: severity.Low ?? 0,
+      },
+      byVerification: {
+        Verified: verification.Verified ?? 0,
+        Pending: verification.Pending ?? 0,
+        Flagged: verification.Flagged ?? 0,
+      },
+      byMissionStatus: {
+        'Awaiting Assignment': mission.AwaitingAssignment ?? 0,
+        'Dispatched': mission.Dispatched ?? 0,
+        'En Route': mission.EnRoute ?? 0,
+        'Active': mission.Active ?? 0,
+        'Resolved': mission.Resolved ?? 0,
+      },
+      byType: type,
+    };
+  },
 
   exportAnalytics: async (): Promise<void> => {
     const data = await apiFetch<Record<string, unknown>[]>('/analytics/export');
