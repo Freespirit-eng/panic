@@ -1,0 +1,6 @@
+{
+  "name": "Panic Sense",
+  "description": "AI-powered Emergency Intelligence and Disaster Response Platform for mission-critical operations",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
