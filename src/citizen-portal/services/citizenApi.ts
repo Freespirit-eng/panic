@@ -32,6 +32,7 @@ export interface RegisterVolunteerRequest {
   notifyRadiusKm: number;
   age?: number;
   gender?: string;
+  status?: 'Available' | 'On Mission' | 'Offline';
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -50,28 +51,33 @@ function base64ToBlob(base64: string, mimeType = 'image/jpeg'): Blob {
 
 export const citizenApi = {
   /**
-   * POST /api/incidents  (multipart/form-data)
-   * Submits a new citizen incident report, optionally with an image.
+   * POST /api/incidents  (application/json)
+   * Submits a new citizen incident report, optionally with an image as base64.
+   * Sending JSON because the backend uses express.json() — no multipart parser is configured.
    */
   submitIncidentReport: async (data: ReportSubmitRequest): Promise<ReportSubmitResponse> => {
-    const formData = new FormData();
-    formData.append('type', data.type);
-    formData.append('severity', data.severity);
-    formData.append('recommendedAction', data.description);
-    formData.append('location[address]', data.locationInput);
-    formData.append('location[lat]', String(data.lat ?? 0));
-    formData.append('location[lng]', String(data.lng ?? 0));
-    formData.append('peopleDetected', String(data.peopleDetected ?? 0));
-    formData.append('childrenDetected', String(data.childrenDetected ?? 0));
+    const payload: Record<string, unknown> = {
+      type: data.type,
+      severity: data.severity,
+      recommendedAction: data.description,
+      location: {
+        address: data.locationInput || 'Unknown Location',
+        lat: data.lat ?? 0,
+        lng: data.lng ?? 0,
+      },
+      peopleDetected: data.peopleDetected ?? 0,
+      childrenDetected: data.childrenDetected ?? 0,
+    };
 
+    // Include image as base64 string — the mock upload middleware reads from req.body.image
     if (data.imageBase64) {
-      const blob = base64ToBlob(data.imageBase64);
-      formData.append('image', blob, 'report.jpg');
+      payload.image = data.imageBase64;
     }
 
     const res = await fetch(`${BASE_URL}/incidents`, {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to submit report');
@@ -126,7 +132,7 @@ export const citizenApi = {
       skills: data.skills,
       equipment: data.equipment,
       notifyRadiusKm: data.notifyRadiusKm,
-      status: 'Available',
+      status: data.status ?? 'Available',
       age: data.age,
       gender: data.gender,
     };
@@ -157,7 +163,7 @@ export const citizenApi = {
       skills: data.skills,
       equipment: data.equipment,
       notifyRadiusKm: data.notifyRadiusKm,
-      status: 'Available',
+      status: data.status ?? 'Available',
       age: data.age,
       gender: data.gender,
     };

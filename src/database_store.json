@@ -1,26 +1,69 @@
 {
   "incidents": [
     {
-      "id": "INC-001",
-      "type": "Road Collapse",
-      "severity": "High",
-      "confidence": 89,
+      "id": "INC-032",
+      "type": "Fire",
+      "severity": "Critical",
+      "confidence": 90,
       "location": {
-        "lat": 12.97760368002915,
-        "lng": 77.59603951970756,
-        "address": "MG Road - Sector B, Bengaluru"
+        "lat": 12.92458,
+        "lng": 77.500159,
+        "address": "Bengaluru, Karnataka (12.9246, 77.5002)"
       },
-      "timestamp": "2026-06-05T22:15:06.394Z",
+      "timestamp": "2026-06-05T23:28:20.176Z",
       "verification": "Pending",
       "duplicates": 0,
-      "peopleDetected": 9,
-      "childrenDetected": 2,
+      "peopleDetected": 2,
+      "childrenDetected": 0,
       "waterLevel": "N/A",
-      "recommendedAction": "Standard response protocol for type [Road Collapse]. Secure structural integrity and deploy zone monitors.",
-      "priorityScore": 53,
+      "recommendedAction": "[AI Image Analysis recommendation]: Evacuate the building immediately, close doors to slow fire, and move upwind.",
+      "priorityScore": 56,
       "reasoning": [
-        "High density zone alert triggered for [Road Collapse] in Bengaluru urban area",
-        "Estimated casualties/affected counts detected by image analysis: 3"
+        "Incident report submitted by citizen"
+      ]
+    },
+    {
+      "id": "INC-031",
+      "type": "Fire",
+      "severity": "Critical",
+      "confidence": 90,
+      "location": {
+        "lat": 12.924575,
+        "lng": 77.500161,
+        "address": "Bengaluru, Karnataka (12.9246, 77.5002)"
+      },
+      "timestamp": "2026-06-05T23:25:32.899Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 2,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "[AI Image Analysis recommendation]: Evacuate the building immediately, close doors to slow fire, and move upwind.",
+      "priorityScore": 56,
+      "reasoning": [
+        "Incident report submitted by citizen"
+      ]
+    },
+    {
+      "id": "INC-030",
+      "type": "Fire",
+      "severity": "Critical",
+      "confidence": 90,
+      "location": {
+        "lat": 12.924575,
+        "lng": 77.500161,
+        "address": "Bengaluru, Karnataka (12.9246, 77.5002)"
+      },
+      "timestamp": "2026-06-05T23:25:20.520Z",
+      "verification": "Pending",
+      "duplicates": 0,
+      "peopleDetected": 2,
+      "childrenDetected": 0,
+      "waterLevel": "N/A",
+      "recommendedAction": "[AI Image Analysis recommendation]: Evacuate the building immediately, close doors to slow fire, and move upwind.",
+      "priorityScore": 56,
+      "reasoning": [
+        "Incident report submitted by citizen"
       ]
     },
     {
@@ -57,7 +100,7 @@
         "address": "Koramangala - Sector D, Bengaluru"
       },
       "timestamp": "2026-06-05T21:35:06.395Z",
-      "verification": "Pending",
+      "verification": "Verified",
       "duplicates": 0,
       "peopleDetected": 3,
       "childrenDetected": 2,
@@ -712,7 +755,28 @@
         "First Aid Kit"
       ],
       "notifyRadiusKm": 5,
-      "receivedAlerts": []
+      "receivedAlerts": [
+        {
+          "id": "ALRT-1780699756707-450",
+          "incidentId": "INC-001",
+          "title": "Dispatch Request: Road Collapse",
+          "message": "Please assist with a Road Collapse emergency at MG Road - Sector B, Bengaluru.",
+          "distanceKm": 0.69,
+          "timestamp": "2026-06-05T22:49:16.708Z",
+          "severity": "High",
+          "accepted": false
+        },
+        {
+          "id": "ALRT-1780699653403-665",
+          "incidentId": "INC-001",
+          "title": "Dispatch Request: Road Collapse",
+          "message": "Please assist with a Road Collapse emergency at MG Road - Sector B, Bengaluru.",
+          "distanceKm": 0.69,
+          "timestamp": "2026-06-05T22:47:33.404Z",
+          "severity": "High",
+          "accepted": false
+        }
+      ]
     },
     {
       "id": "VOL-002",
@@ -912,6 +976,38 @@
       ],
       "notifyRadiusKm": 12,
       "receivedAlerts": []
+    },
+    {
+      "id": "VOL-011",
+      "name": "Vaibhav Malkari",
+      "phone": "8675655343",
+      "location": {
+        "lat": 12.924579,
+        "lng": 77.50016,
+        "address": "Bengaluru, Karnataka (12.9246, 77.5002)"
+      },
+      "status": "On Mission",
+      "skills": [
+        "Swift Water Rescue"
+      ],
+      "equipment": [
+        "Zodiac Boat"
+      ],
+      "notifyRadiusKm": 5,
+      "receivedAlerts": [
+        {
+          "id": "ALRT-1780702493754-934",
+          "incidentId": "INC-032",
+          "title": "Dispatch Request: Fire",
+          "message": "Please assist with a Fire emergency at Bengaluru, Karnataka (12.9246, 77.5002).",
+          "distanceKm": 0,
+          "timestamp": "2026-06-05T23:34:53.754Z",
+          "severity": "Critical",
+          "accepted": true
+        }
+      ],
+      "age": 33,
+      "gender": "Male"
     }
   ],
   "missions": [
@@ -972,7 +1068,7 @@
       "severity": "High",
       "recommendedTeam": "Civil Engineering Response Unit & Traffic Control",
       "assignedTeam": "BBMP Infrastructure Team & Traffic Police",
-      "status": "Dispatched",
+      "status": "Resolved",
       "eta": "12 mins",
       "summary": "Road sinkhole on 80 Feet Road, BTM Layout, blocking major arterial route. 3 vehicles partially submerged.",
       "aiFindings": "Sinkhole approximately 4m diameter. Likely caused by underground water main burst from recent flooding.",
@@ -998,6 +1094,18 @@
         {
           "timestamp": "2026-06-05T22:30:06.396Z",
           "event": "BBMP Infrastructure Team dispatched from Jayanagar depot"
+        },
+        {
+          "timestamp": "2026-06-05T23:39:31.503Z",
+          "event": "Status transitioned from [Dispatched] to [En Route]"
+        },
+        {
+          "timestamp": "2026-06-05T23:39:37.056Z",
+          "event": "Status transitioned from [En Route] to [Active]"
+        },
+        {
+          "timestamp": "2026-06-05T23:39:39.338Z",
+          "event": "Status transitioned from [Active] to [Resolved]"
         }
       ]
     }
@@ -1081,7 +1189,7 @@
       },
       "radiusKm": 2.5,
       "severityLimit": "Medium",
-      "status": "Monitoring"
+      "status": "Normal"
     }
   ],
   "chatMessages": [],

@@ -369,11 +369,13 @@ export default function DashboardPage() {
   const handleVolunteerRegistered = useCallback((volunteer: unknown) => {
     const vol = volunteer as Volunteer;
     setVolunteers(prev => {
-      if (prev.some(v => v.id === vol.id)) return prev;
+      if (prev.some(v => v.id === vol.id)) {
+        return prev.map(v => v.id === vol.id ? vol : v);
+      }
+      setTotalVolunteers(prevTotal => prevTotal + 1);
+      addToast('mission', 'New Volunteer Standby', `${vol.name} is available for dispatch.`);
       return [...prev, vol];
     });
-    setTotalVolunteers(prev => prev + 1);
-    addToast('mission', 'New Volunteer Standby', `${vol.name} is available for dispatch.`);
   }, [addToast]);
 
   const socketRef = useSocket(

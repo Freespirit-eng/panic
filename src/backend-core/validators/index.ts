@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // Shared Sub-Schemas
 export const locationSchema = z.object({
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
   address: z.string().min(1, 'Address is required')
 });
 
@@ -13,8 +13,8 @@ export const createIncidentSchema = z.object({
   severity: z.enum(['Critical', 'High', 'Medium', 'Low']),
   location: locationSchema,
   image: z.string().optional(),
-  peopleDetected: z.number().int().nonnegative().default(0),
-  childrenDetected: z.number().int().nonnegative().default(0),
+  peopleDetected: z.coerce.number().int().nonnegative().default(0),
+  childrenDetected: z.coerce.number().int().nonnegative().default(0),
   waterLevel: z.enum(['High', 'Medium', 'Low', 'N/A']).default('N/A'),
   recommendedAction: z.string().optional(),
   reasoning: z.array(z.string()).optional()
@@ -29,7 +29,8 @@ export const createVolunteerSchema = z.object({
   equipment: z.array(z.string()).default([]),
   notifyRadiusKm: z.number().positive().default(5),
   age: z.number().int().positive().optional(),
-  gender: z.string().optional()
+  gender: z.string().optional(),
+  status: z.enum(['Available', 'On Mission', 'Offline']).optional()
 });
 
 // 3. Create Mission Validator Schema

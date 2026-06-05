@@ -198,6 +198,7 @@ export default function GisMapPage() {
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const userCircleRef = useRef<google.maps.Circle | null>(null);
   const drawCircleRef = useRef<google.maps.Circle | null>(null);
+  const initialPanRef = useRef(false);
 
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -262,7 +263,7 @@ export default function GisMapPage() {
 
     const defaultCenter = userLocation
       ? { lat: userLocation.lat, lng: userLocation.lng }
-      : { lat: 37.7749, lng: -122.4194 }; // SF fallback
+      : { lat: 12.9716, lng: 77.5946 }; // Bengaluru fallback
 
     const map = new window.google.maps.Map(mapRef.current, {
       center: defaultCenter,
@@ -358,6 +359,11 @@ export default function GisMapPage() {
     userMarkerRef.current.addListener('click', () => {
       setPopup({ type: 'user', data: userLocation });
     });
+
+    if (!initialPanRef.current) {
+      map.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+      initialPanRef.current = true;
+    }
   }, [mapLoaded, userLocation]);
 
   // ── Load backend data ─────────────────────────────────────────────────────────

@@ -237,6 +237,7 @@ export default function VolunteerStandbyPage() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('Male');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // — Page state —
   const [volunteerId, setVolunteerId] = useState<string | null>(
@@ -441,6 +442,36 @@ export default function VolunteerStandbyPage() {
 
   const handleCancelEdit = () => {
     setIsEditingProfile(false);
+  };
+
+  // ── Toggle Status (Online / Offline) ──────────────────────────────────────
+  const handleToggleStatus = async () => {
+    if (!volunteer || volunteer.status === 'On Mission') return;
+    setIsUpdatingStatus(true);
+    const newStatus = volunteer.status === 'Offline' ? 'Available' : 'Offline';
+    const payload: RegisterVolunteerRequest = {
+      name: volunteer.name,
+      phone: volunteer.phone,
+      lat: volunteer.location.lat,
+      lng: volunteer.location.lng,
+      address: volunteer.location.address,
+      skills: volunteer.skills,
+      equipment: volunteer.equipment,
+      notifyRadiusKm: volunteer.notifyRadiusKm,
+      age: volunteer.age,
+      gender: volunteer.gender,
+      status: newStatus,
+    };
+    try {
+      const result = await citizenApi.updateVolunteerProfile(volunteer.id, payload);
+      setVolunteer(result);
+      toast.success(`✓ You are now ${newStatus === 'Available' ? 'Online & Available' : 'Offline'}.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update status';
+      toast.error(msg);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
 
   // ── Deregister (reset) ───────────────────────────────────────────────────
@@ -838,6 +869,24 @@ export default function VolunteerStandbyPage() {
                   >
                     EDIT PROFILE
                   </button>
+                  {volunteer.status !== 'On Mission' && (
+                    <>
+                      <span className="text-gray-700">|</span>
+                      <button
+                        id="toggle-offline-btn"
+                        type="button"
+                        onClick={handleToggleStatus}
+                        disabled={isUpdatingStatus}
+                        className={`text-[10px] font-mono transition cursor-pointer ${
+                          volunteer.status === 'Offline'
+                            ? 'text-green-500 hover:text-green-400 font-bold'
+                            : 'text-orange-500 hover:text-orange-400 font-bold'
+                        }`}
+                      >
+                        {volunteer.status === 'Offline' ? 'GO ONLINE' : 'GO OFFLINE'}
+                      </button>
+                    </>
+                  )}
                   <span className="text-gray-700">|</span>
                   <button
                     id="deregister-btn"

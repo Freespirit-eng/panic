@@ -71,9 +71,15 @@ export class VolunteerService {
   public async updateVolunteer(id: string, data: Partial<Volunteer>): Promise<Volunteer> {
     const volunteer = await this.getVolunteerById(id);
     
+    // Constraints: Volunteers who are currently `On Mission` cannot toggle their status
+    if (data.status && data.status !== volunteer.status && volunteer.status === 'On Mission') {
+      throw new AppError('Cannot change status while on a mission', 400);
+    }
+
     Object.assign(volunteer, data);
     db.save();
     
+    socketService.emitVolunteerRegistered(volunteer);
     socketService.emitStatsUpdate();
     return volunteer;
   }

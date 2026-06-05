@@ -159,24 +159,12 @@ export default function ReportingPage() {
           setDescription(finalDescription);
         }
 
-        toast.success(`AI Analysis Complete: Identified a ${resolvedType} emergency with ${resolvedSeverity} severity.`);
+        toast.success(`✓ AI Analysis Complete — Detected ${resolvedType} (${resolvedSeverity} severity). Review the pre-filled fields and hit Submit.`);
 
-        // Auto-submit report immediately
-        const payload: ReportSubmitRequest = {
-          type: resolvedType,
-          severity: resolvedSeverity,
-          description: finalDescription || `Reported ${resolvedType} emergency.`,
-          locationInput: address || 'Current Location',
-          lat: lat ? parseFloat(lat) : undefined,
-          lng: lng ? parseFloat(lng) : undefined,
-          peopleDetected: parseInt(resolvedPeople) || 0,
-          childrenDetected: parseInt(resolvedChildren) || 0,
-          imageBase64: result,
-        };
-
-        await submitReport(payload);
+        // Do NOT auto-submit. The AI results are pre-filled into the form so the user
+        // can review them (location, description, people count) and then manually submit.
       } catch (err: any) {
-        toast.error('AI Image analysis failed. Please manually select the type and severity.');
+        toast.error('AI image analysis failed. Please manually select the incident type and severity.');
         console.warn('AI Image analysis failed:', err.message);
       } finally {
         setIsAnalyzingImage(false);

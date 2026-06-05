@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search, Filter, ChevronRight, X, Send, Loader2,
-  MapPin, Clock, Users, AlertTriangle,
+  MapPin, Clock, Users, AlertTriangle, CheckCircle2,
   Shield, ShieldCheck, ShieldAlert, Flame, Droplets,
   Zap, Construction, Building, Trash2, Eye
 } from 'lucide-react';
@@ -10,7 +10,7 @@ import { commanderApi } from '../services/commanderApi';
 import { useSocket } from '../hooks/useSocket';
 import { useToast } from '../hooks/useToast';
 import {
-  Incident, SeverityLevel, VerificationStatus, IncidentType
+  Incident, SeverityLevel, VerificationStatus, IncidentType, Volunteer
 } from '../../shared/types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -157,19 +157,202 @@ function ResponderChat({ incidentId }: { incidentId: string }) {
   );
 }
 
+// ── Emergency Services config ─────────────────────────────────────────────────
+
+const EMERGENCY_SERVICES: Record<string, { label: string; emoji: string; color: string; border: string; bg: string }[]> = {
+  Fire: [
+    { label: 'Fire Brigade', emoji: '🚒', color: 'text-red-300', border: 'border-red-700', bg: 'hover:bg-red-950' },
+    { label: 'Ambulance', emoji: '🚑', color: 'text-orange-300', border: 'border-orange-700', bg: 'hover:bg-orange-950' },
+  ],
+  Flood: [
+    { label: 'Rescue Boat', emoji: '⛵', color: 'text-blue-300', border: 'border-blue-700', bg: 'hover:bg-blue-950' },
+    { label: 'Ambulance', emoji: '🚑', color: 'text-orange-300', border: 'border-orange-700', bg: 'hover:bg-orange-950' },
+    { label: 'NDRF Team', emoji: '🪖', color: 'text-green-300', border: 'border-green-700', bg: 'hover:bg-green-950' },
+  ],
+  Earthquake: [
+    { label: 'NDRF Team', emoji: '🪖', color: 'text-green-300', border: 'border-green-700', bg: 'hover:bg-green-950' },
+    { label: 'Ambulance', emoji: '🚑', color: 'text-orange-300', border: 'border-orange-700', bg: 'hover:bg-orange-950' },
+    { label: 'Fire Brigade', emoji: '🚒', color: 'text-red-300', border: 'border-red-700', bg: 'hover:bg-red-950' },
+  ],
+  'Road Collapse': [
+    { label: 'Police', emoji: '🚔', color: 'text-blue-300', border: 'border-blue-700', bg: 'hover:bg-blue-950' },
+    { label: 'Ambulance', emoji: '🚑', color: 'text-orange-300', border: 'border-orange-700', bg: 'hover:bg-orange-950' },
+    { label: 'Fire Brigade', emoji: '🚒', color: 'text-red-300', border: 'border-red-700', bg: 'hover:bg-red-950' },
+  ],
+  'Building Damage': [
+    { label: 'Fire Brigade', emoji: '🚒', color: 'text-red-300', border: 'border-red-700', bg: 'hover:bg-red-950' },
+    { label: 'NDRF Team', emoji: '🪖', color: 'text-green-300', border: 'border-green-700', bg: 'hover:bg-green-950' },
+    { label: 'Ambulance', emoji: '🚑', color: 'text-orange-300', border: 'border-orange-700', bg: 'hover:bg-orange-950' },
+  ],
+};
+
+function distKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ── Inline Dispatch Form ──────────────────────────────────────────────────────
+
+function InlineDispatchForm({
+  incident,
+  onDone,
+  onCancel,
+}: {
+  incident: Incident;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const { addToast } = useToast();
+  const [assignedTeam, setAssignedTeam] = useState('');
+  const [eta, setEta] = useState('');
+  const [summary, setSummary] = useState(incident.recommendedAction ?? '');
+  const [resources, setResources] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  const RESOURCE_OPTIONS = ['Zodiac Boat', 'Life Vests', 'Trauma Kit', 'Radio', 'AED', 'Fire Truck', 'Ambulance', 'Search Dog'];
+
+  const toggleResource = (r: string) =>
+    setResources(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignedTeam || !eta) {
+      addToast('info', 'Validation', 'Assigned Team and ETA are required');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await commanderApi.createMission({
+        incidentId: incident.id,
+        assignedTeam,
+        eta,
+        summary,
+        requiredResources: resources,
+        location: incident.location,
+        type: incident.type,
+        severity: incident.severity,
+      });
+      addToast('mission', 'Mission Dispatched', `Mission created for ${incident.type}`);
+      onDone();
+    } catch {
+      addToast('info', 'Error', 'Could not create mission');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <motion.form
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      onSubmit={handleSubmit}
+      className="bg-[#0a1020] border border-blue-800/40 rounded-xl p-4 space-y-3"
+    >
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[10px] font-mono text-blue-400 uppercase tracking-widest font-bold">Dispatch Mission</p>
+        <button type="button" onClick={onCancel} className="text-gray-600 hover:text-gray-300">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <div>
+        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">Assigned Team *</label>
+        <input
+          value={assignedTeam}
+          onChange={e => setAssignedTeam(e.target.value)}
+          placeholder="e.g. Alpha-3 Rescue Unit"
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600"
+          required
+        />
+      </div>
+      <div>
+        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">ETA *</label>
+        <input
+          value={eta}
+          onChange={e => setEta(e.target.value)}
+          placeholder="e.g. 15 minutes"
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600"
+          required
+        />
+      </div>
+      <div>
+        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1">Summary</label>
+        <textarea
+          value={summary}
+          onChange={e => setSummary(e.target.value)}
+          rows={2}
+          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-600 resize-none"
+        />
+      </div>
+      <div>
+        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block mb-1.5">Resources</label>
+        <div className="flex flex-wrap gap-1">
+          {RESOURCE_OPTIONS.map(r => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => toggleResource(r)}
+              className={`text-[9px] font-mono px-2 py-0.5 rounded border transition-all
+                ${resources.includes(r) ? 'bg-blue-950 border-blue-700 text-blue-300' : 'border-gray-700 text-gray-500 hover:border-gray-600'}`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-mono font-bold py-2 rounded-lg transition-colors"
+      >
+        {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        {submitting ? 'DISPATCHING...' : 'CONFIRM DISPATCH'}
+      </button>
+    </motion.form>
+  );
+}
+
 // ── Detail Sidebar ────────────────────────────────────────────────────────────
 
 function DetailSidebar({
   incident,
   onClose,
-  onDispatch,
 }: {
   incident: Incident;
   onClose: () => void;
-  onDispatch: (inc: Incident) => void;
 }) {
   const [verifying, setVerifying] = useState(false);
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volLoading, setVolLoading] = useState(true);
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [assignedIds, setAssignedIds] = useState<Set<string>>(new Set());
+  const [dispatchingSvc, setDispatchingSvc] = useState<string | null>(null);
+  const [dispatchedSvcs, setDispatchedSvcs] = useState<Set<string>>(new Set());
+  const [showDispatch, setShowDispatch] = useState(false);
   const { addToast } = useToast();
+
+  // Load and sort volunteers by proximity
+  useEffect(() => {
+    setVolLoading(true);
+    commanderApi.getVolunteers()
+      .then(all => {
+        const available = all
+          .filter(v => v.status === 'Available')
+          .map(v => ({
+            ...v,
+            _dist: distKm(incident.location.lat, incident.location.lng, v.location.lat, v.location.lng),
+          }))
+          .sort((a, b) => a._dist - b._dist)
+          .slice(0, 5);
+        setVolunteers(available as Volunteer[]);
+      })
+      .catch(() => {})
+      .finally(() => setVolLoading(false));
+  }, [incident.id, incident.location.lat, incident.location.lng]);
 
   const handleVerify = async (v: VerificationStatus) => {
     setVerifying(true);
@@ -183,16 +366,40 @@ function DetailSidebar({
     }
   };
 
+  const handleAssignVolunteer = async (vol: Volunteer) => {
+    setAssigningId(vol.id);
+    try {
+      await commanderApi.assignIncidentToVolunteer(vol.id, incident.id);
+      setAssignedIds(prev => new Set([...prev, vol.id]));
+      addToast('mission', 'Volunteer Assigned', `${vol.name} dispatched to ${incident.type}`);
+    } catch {
+      addToast('info', 'Error', 'Could not assign volunteer');
+    } finally {
+      setAssigningId(null);
+    }
+  };
+
+  const handleDispatchService = (svc: string) => {
+    setDispatchingSvc(svc);
+    setTimeout(() => {
+      setDispatchedSvcs(prev => new Set([...prev, svc]));
+      setDispatchingSvc(null);
+      addToast('critical', `${svc} Dispatched`, `${svc} en route to ${incident.location.address}`);
+    }, 1200);
+  };
+
+  const services = EMERGENCY_SERVICES[incident.type] ?? EMERGENCY_SERVICES['Flood'];
+
   return (
     <motion.div
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed right-0 top-16 bottom-0 w-96 bg-[#0d1525] border-l border-gray-800 z-30 flex flex-col shadow-2xl overflow-y-auto"
+      className="fixed right-0 top-16 bottom-0 w-[420px] bg-[#0d1525] border-l border-gray-800 z-30 flex flex-col shadow-2xl"
     >
       {/* Header */}
-      <div className={`p-4 border-b border-gray-800 border-l-4 ${severityBorderL(incident.severity)}`}>
+      <div className={`p-4 border-b border-gray-800 border-l-4 ${severityBorderL(incident.severity)} shrink-0`}>
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-mono text-gray-500">{incident.id}</p>
@@ -210,7 +417,8 @@ function DetailSidebar({
         </div>
       </div>
 
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Location */}
         <div className="flex items-start gap-2 text-sm text-gray-400">
           <MapPin className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
@@ -231,38 +439,110 @@ function DetailSidebar({
           ))}
         </div>
 
-        {/* Water Level */}
-        <div className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-lg p-3">
-          <span className="text-xs text-gray-500 font-mono">WATER LEVEL</span>
-          <span className={`text-sm font-bold font-mono ${
-            incident.waterLevel === 'High' ? 'text-red-400' :
-            incident.waterLevel === 'Medium' ? 'text-yellow-400' :
-            incident.waterLevel === 'Low' ? 'text-blue-400' : 'text-gray-500'
-          }`}>{incident.waterLevel}</span>
-        </div>
-
-        {/* Recommended Action */}
+        {/* ── EMERGENCY SERVICES ──────────────────────────────────────────── */}
         <div>
-          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Recommended Action</p>
-          <p className="text-xs text-gray-300 leading-relaxed bg-gray-900 border border-gray-800 rounded-lg p-3">
-            {incident.recommendedAction}
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            Send Emergency Services
           </p>
+          <div className="flex flex-wrap gap-2">
+            {services.map(svc => {
+              const dispatched = dispatchedSvcs.has(svc.label);
+              const loading = dispatchingSvc === svc.label;
+              return (
+                <motion.button
+                  key={svc.label}
+                  whileHover={!dispatched ? { scale: 1.04 } : {}}
+                  whileTap={!dispatched ? { scale: 0.97 } : {}}
+                  onClick={() => !dispatched && handleDispatchService(svc.label)}
+                  disabled={dispatched || loading}
+                  className={`flex items-center gap-1.5 text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg border transition-all
+                    ${dispatched
+                      ? 'bg-gray-900 border-gray-700 text-gray-500 cursor-default'
+                      : `bg-transparent ${svc.border} ${svc.color} ${svc.bg} cursor-pointer`}`}
+                >
+                  {loading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : dispatched ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  ) : (
+                    <span className="text-sm">{svc.emoji}</span>
+                  )}
+                  {dispatched ? `${svc.label} Dispatched` : svc.label}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* AI Reasoning */}
+        {/* ── NEAREST VOLUNTEERS ─────────────────────────────────────────── */}
         <div>
-          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">AI Reasoning</p>
-          <ul className="space-y-1.5">
-            {(incident.reasoning || []).map((r, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
-                <span className="text-blue-500 mt-0.5 shrink-0">▸</span>
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <Users className="w-3 h-3" />
+            Nearest Available Volunteers
+          </p>
+          {volLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-10 bg-gray-900 border border-gray-800 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : volunteers.length === 0 ? (
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center text-xs text-gray-600 font-mono">
+              No available volunteers nearby
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {volunteers.map((vol: any) => {
+                const assigned = assignedIds.has(vol.id);
+                const loading = assigningId === vol.id;
+                return (
+                  <div
+                    key={vol.id}
+                    className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-lg px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+                        <p className="text-xs text-white font-mono font-bold truncate">{vol.name}</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 ml-3.5">
+                        <span className="text-[10px] text-gray-500 font-mono">
+                          📍 {vol._dist.toFixed(1)} km away
+                        </span>
+                        {vol.skills?.[0] && (
+                          <span className="text-[10px] text-blue-400 font-mono truncate">
+                            · {vol.skills[0]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={!assigned ? { scale: 1.05 } : {}}
+                      whileTap={!assigned ? { scale: 0.95 } : {}}
+                      onClick={() => !assigned && handleAssignVolunteer(vol)}
+                      disabled={assigned || loading}
+                      className={`ml-2 shrink-0 flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg border transition-all
+                        ${assigned
+                          ? 'bg-green-950/40 border-green-800 text-green-400 cursor-default'
+                          : 'bg-blue-950/30 border-blue-800 text-blue-300 hover:bg-blue-900/50 cursor-pointer'}`}
+                    >
+                      {loading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : assigned ? (
+                        <><CheckCircle2 className="w-3 h-3" />Assigned</>
+                      ) : (
+                        <><Users className="w-3 h-3" />Assign</>
+                      )}
+                    </motion.button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Verification Controls */}
+        {/* ── VERIFICATION ───────────────────────────────────────────────── */}
         <div>
           <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2">Set Verification</p>
           <div className="flex gap-2">
@@ -282,21 +562,53 @@ function DetailSidebar({
           </div>
         </div>
 
-        {/* Actions */}
-        <button
-          onClick={() => onDispatch(incident)}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold py-2.5 rounded-lg transition-colors"
-        >
-          <ChevronRight className="w-3.5 h-3.5" />
-          CREATE MISSION / DISPATCH
-        </button>
+        {/* ── RECOMMENDED ACTION ─────────────────────────────────────────── */}
+        <div>
+          <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Recommended Action</p>
+          <p className="text-xs text-gray-300 leading-relaxed bg-gray-900 border border-gray-800 rounded-lg p-3">
+            {incident.recommendedAction}
+          </p>
+        </div>
 
-        {/* AI Chat */}
+        {/* ── AI Reasoning ───────────────────────────────────────────────── */}
+        {(incident.reasoning?.length ?? 0) > 0 && (
+          <div>
+            <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">AI Reasoning</p>
+            <ul className="space-y-1.5">
+              {(incident.reasoning || []).map((r, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
+                  <span className="text-blue-500 mt-0.5 shrink-0">▸</span>
+                  <span>{r}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* ── CREATE MISSION / DISPATCH ───────────────────────────────────── */}
+        {!showDispatch ? (
+          <button
+            onClick={() => setShowDispatch(true)}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold py-2.5 rounded-lg transition-colors"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+            CREATE MISSION / DISPATCH
+          </button>
+        ) : (
+          <InlineDispatchForm
+            incident={incident}
+            onDone={() => setShowDispatch(false)}
+            onCancel={() => setShowDispatch(false)}
+          />
+        )}
+
+        {/* ── AI Chat ────────────────────────────────────────────────────── */}
         <ResponderChat incidentId={incident.id} />
       </div>
     </motion.div>
   );
 }
+
 
 // ── Incident Card ─────────────────────────────────────────────────────────────
 
@@ -644,9 +956,7 @@ export default function IncidentFeedPage() {
                   incident={inc}
                   isSelected={selectedId === inc.id}
                   onClick={() => setSelectedId(prev => prev === inc.id ? null : inc.id)}
-                  onDispatch={() => {
-                    addToast('broadcast', 'Dispatch', `Opening dispatch for ${inc.type}`);
-                  }}
+                  onDispatch={() => setSelectedId(inc.id)}
                 />
               </div>
             ))}
@@ -660,9 +970,6 @@ export default function IncidentFeedPage() {
           <DetailSidebar
             incident={selectedIncident}
             onClose={() => setSelectedId(null)}
-            onDispatch={(inc) => {
-              addToast('broadcast', 'Dispatch', `Dispatch initiated for ${inc.type}`);
-            }}
           />
         )}
       </AnimatePresence>
