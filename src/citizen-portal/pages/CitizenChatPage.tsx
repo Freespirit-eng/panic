@@ -403,11 +403,10 @@ export default function CitizenChatPage() {
               id="chat-voice-btn"
               type="button"
               onClick={toggleVoice}
-              className={`w-9 h-9 flex items-center justify-center rounded-xl border transition shrink-0 ${
-                isListening
-                  ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'
-                  : 'bg-[#0B1220] border-gray-700 text-gray-500 hover:border-green-500/40 hover:text-green-400'
-              }`}
+              className={`w-9 h-9 flex items-center justify-center rounded-xl border transition shrink-0 ${isListening
+                ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'
+                : 'bg-[#0B1220] border-gray-700 text-gray-500 hover:border-green-500/40 hover:text-green-400'
+                }`}
               title={isListening ? 'Stop recording' : 'Voice input'}
             >
               {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
