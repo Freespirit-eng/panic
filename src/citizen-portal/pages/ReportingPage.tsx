@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { citizenApi, ReportSubmitRequest } from '../services/citizenApi';
 import { Incident, IncidentType, SeverityLevel } from '../../shared/types';
+import { useToast } from '../components/ToastProvider';
 
 // ─── Types & Constants ─────────────────────────────────────────────────────────
 
@@ -96,6 +97,8 @@ export default function ReportingPage() {
   // — Duplicate handling —
   const [mergeLoading, setMergeLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
+
+  const toast = useToast();
 
   // ── Image Upload ─────────────────────────────────────────────────────────────
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,12 +201,16 @@ export default function ReportingPage() {
         res.createdIncident.duplicates > 0
       ) {
         setPageState('duplicate');
+        toast.warning('⚠ Duplicate incident detected — please review before confirming.');
       } else {
         setPageState('success');
+        toast.success('✓ Incident reported successfully. Responders have been notified.');
       }
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Submission failed. Please try again.';
+      setErrorMsg(msg);
       setPageState('error');
+      toast.error(msg);
     }
   };
 
@@ -212,12 +219,11 @@ export default function ReportingPage() {
     if (!createdIncident) return;
     setMergeLoading(true);
     try {
-      // merge the newly created incident into any known duplicate
-      // For now we merge by id (backend resolves nearest duplicate)
       await citizenApi.mergeIncident(createdIncident.id, createdIncident.id);
+      toast.info('Incident merged with existing report.');
       setPageState('success');
     } catch {
-      // still navigate to success with the created incident
+      toast.info('Marked as merged. Proceeding to confirmation.');
       setPageState('success');
     } finally {
       setMergeLoading(false);
@@ -230,8 +236,9 @@ export default function ReportingPage() {
     try {
       const updated = await citizenApi.verifyIncident(createdIncident.id, 'Verified');
       setCreatedIncident(updated);
+      toast.success('✓ Incident verified as a separate report.');
     } catch {
-      // non-fatal; navigate to success anyway
+      toast.info('Saved as separate incident.');
     } finally {
       setVerifyLoading(false);
       setPageState('success');

@@ -27,6 +27,7 @@ import {
 import { io, Socket } from 'socket.io-client';
 import { citizenApi, RegisterVolunteerRequest } from '../services/citizenApi';
 import { Volunteer, SeverityLevel, VolunteerAlertNotification } from '../../shared/types';
+import { useToast } from '../components/ToastProvider';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -246,6 +247,7 @@ export default function VolunteerStandbyPage() {
   const [socketConnected, setSocketConnected] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
+  const toast = useToast();
 
   // ── Fetch volunteer data ──────────────────────────────────────────────────
   const fetchVolunteer = useCallback(async (id: string) => {
@@ -325,8 +327,11 @@ export default function VolunteerStandbyPage() {
       localStorage.setItem(STORAGE_KEY, result.id);
       setVolunteerId(result.id);
       setVolunteer(result);
+      toast.success(`✓ Welcome, ${result.name}! You are now registered as a volunteer.`);
     } catch (err: unknown) {
-      setRegError(err instanceof Error ? err.message : 'Registration failed. Try again.');
+      const msg = err instanceof Error ? err.message : 'Registration failed. Try again.';
+      setRegError(msg);
+      toast.error(msg);
     } finally {
       setIsRegistering(false);
     }
@@ -349,8 +354,9 @@ export default function VolunteerStandbyPage() {
           ),
         };
       });
+      toast.success('✓ Mission accepted! Command center has been notified.');
     } catch {
-      // silently fail — the next poll will correct state
+      toast.error('Failed to accept mission. Please try again.');
     } finally {
       setAcceptingId(null);
     }

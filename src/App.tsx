@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { citizenRoutes } from './citizen-portal/routes/citizenRoutes';
 import { commanderRoutes } from './command-center/routes/commanderRoutes';
 
@@ -56,27 +57,37 @@ export default function App() {
       </header>
 
       {/* Navigation Sub-bar based on Active Module */}
-      <nav className="bg-[#111827] border-b border-gray-800 px-4 py-2 flex gap-4 text-xs font-mono">
+      <nav className="bg-[#111827] border-b border-gray-800 px-4 py-2 flex gap-4 text-xs font-mono overflow-x-auto">
         {appMode === 'citizen' ? (
           <>
-            <button onClick={() => handleNavigate('report')} className={`hover:text-white ${currentPath === 'report' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[01 // REPORT]</button>
-            <button onClick={() => handleNavigate('volunteer')} className={`hover:text-white ${currentPath === 'volunteer' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[02 // VOLUNTEER]</button>
-            <button onClick={() => handleNavigate('chat')} className={`hover:text-white ${currentPath === 'chat' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[03 // ASSISTANT CHAT]</button>
-            <button onClick={() => handleNavigate('directory')} className={`hover:text-white ${currentPath === 'directory' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[04 // DIRECTORY]</button>
+            <button onClick={() => handleNavigate('report')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'report' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[01 // REPORT]</button>
+            <button onClick={() => handleNavigate('volunteer')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'volunteer' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[02 // VOLUNTEER]</button>
+            <button onClick={() => handleNavigate('chat')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'chat' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[03 // ASSISTANT CHAT]</button>
+            <button onClick={() => handleNavigate('directory')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'directory' ? 'text-green-400 font-bold' : 'text-gray-400'}`}>[04 // DIRECTORY]</button>
           </>
         ) : (
           <>
-            <button onClick={() => handleNavigate('dashboard')} className={`hover:text-white ${currentPath === 'dashboard' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[01 // OVERVIEW]</button>
-            <button onClick={() => handleNavigate('incidents')} className={`hover:text-white ${currentPath === 'incidents' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[02 // LIVE FEED]</button>
-            <button onClick={() => handleNavigate('dispatch')} className={`hover:text-white ${currentPath === 'dispatch' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[03 // DISPATCH]</button>
-            <button onClick={() => handleNavigate('map')} className={`hover:text-white ${currentPath === 'map' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[04 // GIS MAP]</button>
-            <button onClick={() => handleNavigate('broadcast')} className={`hover:text-white ${currentPath === 'broadcast' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[05 // BROADCASTS]</button>
+            <button onClick={() => handleNavigate('dashboard')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'dashboard' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[01 // OVERVIEW]</button>
+            <button onClick={() => handleNavigate('incidents')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'incidents' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[02 // LIVE FEED]</button>
+            <button onClick={() => handleNavigate('dispatch')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'dispatch' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[03 // DISPATCH]</button>
+            <button onClick={() => handleNavigate('map')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'map' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[04 // GIS MAP]</button>
+            <button onClick={() => handleNavigate('broadcast')} className={`hover:text-white whitespace-nowrap transition ${currentPath === 'broadcast' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>[05 // BROADCASTS]</button>
           </>
         )}
       </nav>
 
       <main className="flex-1 p-4 overflow-y-auto">
-        {renderActiveRoute()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${appMode}-${currentPath}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            {renderActiveRoute()}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );
