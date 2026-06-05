@@ -232,8 +232,10 @@ export function generateSeededIncidents(): Incident[] {
   return list;
 }
 
-// Simple execution trigger if called directly via node/ts-node
-if (require.main === module) {
+// ES module equivalent of require.main === module
+import { fileURLToPath } from 'url';
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
   console.log('--- PANICSENSE SEED GENERATOR ---');
   console.log(`Operators created: ${seededOperators.length}`);
   console.log(`Volunteers created: ${seededVolunteers.length}`);
