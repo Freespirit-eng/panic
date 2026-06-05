@@ -24,7 +24,7 @@ export const incidentController = {
     
     // Validate request body
     const validatedData = createIncidentSchema.parse(req.body);
-    const incident = await incidentService.createIncident(validatedData);
+    const incident = await incidentService.createIncident(validatedData as any);
     res.status(201).json({ success: true, data: incident });
   }),
 
@@ -32,7 +32,7 @@ export const incidentController = {
     const { id } = req.params;
     // Partial schema validation for updates
     const validatedData = createIncidentSchema.partial().parse(req.body);
-    const incident = await incidentService.updateIncident(id, validatedData);
+    const incident = await incidentService.updateIncident(id, validatedData as any);
     res.status(200).json({ success: true, data: incident });
   }),
 

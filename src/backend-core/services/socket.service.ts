@@ -1,6 +1,8 @@
 import { Server as HTTPServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { Incident, Mission, Volunteer, Broadcast } from '../../shared/types';
+import { db } from '../database/db';
+import { decodeMockToken } from '../controllers/auth.controller';
 
 export class SocketService {
   private static instance: SocketService;
@@ -34,7 +36,6 @@ export class SocketService {
       if (token) {
         const tokenString = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
         try {
-          const { decodeMockToken } = require('../controllers/auth.controller');
           const decoded = decodeMockToken(tokenString);
           if (decoded) {
             (socket as any).user = decoded;
@@ -152,9 +153,6 @@ export class SocketService {
    * This updates the active overview counts without manual page refreshes.
    */
   public emitStatsUpdate(): void {
-    // In-memory imports dynamically to avoid circular dependencies
-    const { db } = require('../database/db');
-    
     const activeIncidents = db.incidents.length;
     const criticalEmergencies = db.incidents.filter((i: Incident) => i.severity === 'Critical').length;
     const respondersDeployed = db.missions.filter((m: Mission) => m.status !== 'Resolved').length;

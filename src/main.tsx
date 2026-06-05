@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { ToastProvider } from './citizen-portal/components/ToastProvider.tsx';
+import { ToastProvider } from './command-center/hooks/useToast';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

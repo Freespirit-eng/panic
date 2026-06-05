@@ -4,6 +4,7 @@ import IncidentFeedPage from '../pages/IncidentFeedPage';
 import DispatchConsolePage from '../pages/DispatchConsolePage';
 import GisMapPage from '../pages/GisMapPage';
 import BroadcastRegulatorPage from '../pages/BroadcastRegulatorPage';
+import SettingsPage from '../pages/SettingsPage';
 
 export const commanderRoutes = [
   {
@@ -23,7 +24,15 @@ export const commanderRoutes = [
     element: <GisMapPage />
   },
   {
+    path: 'analytics',
+    element: <BroadcastRegulatorPage viewMode="analytics" />
+  },
+  {
     path: 'broadcast',
-    element: <BroadcastRegulatorPage />
+    element: <BroadcastRegulatorPage viewMode="broadcast" />
+  },
+  {
+    path: 'settings',
+    element: <SettingsPage />
   }
 ];

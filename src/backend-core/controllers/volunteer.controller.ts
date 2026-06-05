@@ -28,14 +28,14 @@ export const volunteerController = {
 
   registerVolunteer: asyncHandler(async (req: Request, res: Response) => {
     const validatedData = createVolunteerSchema.parse(req.body);
-    const volunteer = await volunteerService.registerVolunteer(validatedData);
+    const volunteer = await volunteerService.registerVolunteer(validatedData as any);
     res.status(201).json({ success: true, data: volunteer });
   }),
 
   updateVolunteer: asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const validatedData = createVolunteerSchema.partial().parse(req.body);
-    const volunteer = await volunteerService.updateVolunteer(id, validatedData);
+    const volunteer = await volunteerService.updateVolunteer(id, validatedData as any);
     res.status(200).json({ success: true, data: volunteer });
   }),
 
