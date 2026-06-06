@@ -1,9 +1,10 @@
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
+import process from 'process';
 
 console.log('🚀 Starting PanicSense services on Render...');
 
 // 1. Start Express Backend
-const backend = spawn('node', ['dist/server.cjs'], {
+const backend = spawn('node', ['dist/server.js'], {
   env: process.env,
   stdio: 'inherit'
 });
@@ -14,7 +15,7 @@ backend.on('exit', (code) => {
 });
 
 // 2. Start AI Engine
-const aiEngine = spawn('node', ['dist/ai-engine.cjs'], {
+const aiEngine = spawn('node', ['dist/ai-engine.js'], {
   env: process.env,
   stdio: 'inherit'
 });

@@ -45,7 +45,7 @@ def start_services():
     # 3. Launch Backend Core (Port 3000)
     status.info("🚀 Launching Backend Core (Port 3000)...")
     backend_proc = subprocess.Popen(
-        ["node", "dist/server.cjs"],
+        ["node", "dist/server.js"],
         env=env,
         stdout=backend_log,
         stderr=backend_log
@@ -54,7 +54,7 @@ def start_services():
     # 4. Launch AI Engine (Port 8001)
     status.info("🧠 Launching AI Engine (Port 8001)...")
     ai_proc = subprocess.Popen(
-        ["node", "dist/ai-engine.cjs"],
+        ["node", "dist/ai-engine.js"],
         env=env,
         stdout=ai_log,
         stderr=ai_log
