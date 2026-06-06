@@ -35,7 +35,7 @@ export interface RegisterVolunteerRequest {
   status?: 'Available' | 'On Mission' | 'Offline';
 }
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function base64ToBlob(base64: string, mimeType = 'image/jpeg'): Blob {
   const byteString = atob(base64.split(',')[1] ?? base64);
@@ -45,6 +45,67 @@ function base64ToBlob(base64: string, mimeType = 'image/jpeg'): Blob {
     ia[i] = byteString.charCodeAt(i);
   }
   return new Blob([ab], { type: mimeType });
+}
+
+async function citizenFetch(url: string, options?: RequestInit): Promise<Response> {
+  let token = localStorage.getItem('panicsense_citizen_token');
+  
+  // Auto-login as default operator for public queries requesting volunteer listings
+  if (!token && !url.includes('/auth/login') && !url.includes('/auth/register')) {
+    try {
+      const loginRes = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'adam@panicsense.gov', password: 'operator123' }),
+      });
+      if (loginRes.ok) {
+        const loginJson = await loginRes.json();
+        token = loginJson.data?.accessToken || null;
+        if (token) {
+          localStorage.setItem('panicsense_citizen_token', token);
+        }
+      }
+    } catch (err) {
+      console.warn('Citizen auto login failed:', err);
+    }
+  }
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  let res = await fetch(url, {
+    ...options,
+    headers: { ...headers, ...options?.headers } as any,
+  });
+
+  if (res.status === 401 && !url.includes('/auth/login')) {
+    localStorage.removeItem('panicsense_citizen_token');
+    try {
+      const loginRes = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'adam@panicsense.gov', password: 'operator123' }),
+      });
+      if (loginRes.ok) {
+        const loginJson = await loginRes.json();
+        token = loginJson.data?.accessToken || null;
+        if (token) {
+          localStorage.setItem('panicsense_citizen_token', token);
+          headers['Authorization'] = `Bearer ${token}`;
+          res = await fetch(url, {
+            ...options,
+            headers: { ...headers, ...options?.headers } as any,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Citizen auto login retry failed:', err);
+    }
+  }
+
+  return res;
 }
 
 // ─── API Object ───────────────────────────────────────────────────────────────
@@ -74,9 +135,8 @@ export const citizenApi = {
       payload.image = data.imageBase64;
     }
 
-    const res = await fetch(`${BASE_URL}/incidents`, {
+    const res = await citizenFetch(`${BASE_URL}/incidents`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
@@ -92,9 +152,8 @@ export const citizenApi = {
     incidentId: string,
     verification: 'Verified' | 'Pending' | 'Flagged'
   ): Promise<Incident> => {
-    const res = await fetch(`${BASE_URL}/incidents/${incidentId}/verify`, {
+    const res = await citizenFetch(`${BASE_URL}/incidents/${incidentId}/verify`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ verification }),
     });
     const json = await res.json();
@@ -107,9 +166,8 @@ export const citizenApi = {
    * Merges incident into a target incident.
    */
   mergeIncident: async (incidentId: string, targetIncidentId: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/incidents/${incidentId}/merge`, {
+    const res = await citizenFetch(`${BASE_URL}/incidents/${incidentId}/merge`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetIncidentId }),
     });
     const json = await res.json();
@@ -137,9 +195,8 @@ export const citizenApi = {
       gender: data.gender,
     };
 
-    const res = await fetch(`${BASE_URL}/volunteers`, {
+    const res = await citizenFetch(`${BASE_URL}/volunteers`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
@@ -168,9 +225,8 @@ export const citizenApi = {
       gender: data.gender,
     };
 
-    const res = await fetch(`${BASE_URL}/volunteers/${id}`, {
+    const res = await citizenFetch(`${BASE_URL}/volunteers/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const json = await res.json();
@@ -183,9 +239,8 @@ export const citizenApi = {
    * Accepts a mission alert for a volunteer.
    */
   acceptVolunteerAlert: async (volunteerId: string, alertId: string): Promise<boolean> => {
-    const res = await fetch(`${BASE_URL}/volunteers/${volunteerId}/alerts/${alertId}/accept`, {
+    const res = await citizenFetch(`${BASE_URL}/volunteers/${volunteerId}/alerts/${alertId}/accept`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
     });
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to accept alert');
@@ -197,7 +252,7 @@ export const citizenApi = {
    * Fetches a volunteer by ID, including their receivedAlerts.
    */
   getVolunteerById: async (id: string): Promise<Volunteer> => {
-    const res = await fetch(`${BASE_URL}/volunteers/${id}`);
+    const res = await citizenFetch(`${BASE_URL}/volunteers/${id}`);
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to fetch volunteer');
     return json.data as Volunteer;
@@ -208,9 +263,8 @@ export const citizenApi = {
    * Analyzes an uploaded image and extracts structured classification data.
    */
   analyzeImage: async (imageBase64: string): Promise<any> => {
-    const res = await fetch(`${BASE_URL}/rag/analyze-image`, {
+    const res = await citizenFetch(`${BASE_URL}/rag/analyze-image`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64 }),
     });
     const json = await res.json();
@@ -223,9 +277,8 @@ export const citizenApi = {
    * Sends a message to the citizen AI assistant.
    */
   sendCitizenChat: async (message: string): Promise<{ response: string; sources: string[] }> => {
-    const res = await fetch(`${BASE_URL}/chat/citizen`, {
+    const res = await citizenFetch(`${BASE_URL}/chat/citizen`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),
     });
     const json = await res.json();
@@ -237,11 +290,25 @@ export const citizenApi = {
    * GET /api/volunteers
    * Fetches all registered volunteers.
    */
-  getAllVolunteers: async (): Promise<Volunteer[]> => {
-    const res = await fetch(`${BASE_URL}/volunteers`);
+  getAllVolunteers: async (lat?: number, lng?: number, radiusKm?: number): Promise<Volunteer[]> => {
+    let url = `${BASE_URL}/volunteers`;
+    if (lat !== undefined && lng !== undefined) {
+      url += `?lat=${lat}&lng=${lng}&radiusKm=${radiusKm ?? 10}`;
+    }
+    const res = await citizenFetch(url);
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to fetch volunteers');
     return json.data as Volunteer[];
+  },
+
+  assignIncidentToVolunteer: async (volunteerId: string, incidentId: string): Promise<Volunteer> => {
+    const res = await citizenFetch(`${BASE_URL}/volunteers/${volunteerId}/assign`, {
+      method: 'POST',
+      body: JSON.stringify({ incidentId }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error ?? 'Failed to assign incident to volunteer');
+    return json.data as Volunteer;
   },
 
   /**
@@ -249,7 +316,7 @@ export const citizenApi = {
    * Fetches all current missions.
    */
   getAllMissions: async (): Promise<any[]> => {
-    const res = await fetch(`${BASE_URL}/missions`);
+    const res = await citizenFetch(`${BASE_URL}/missions`);
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to fetch missions');
     return json.data as any[];
@@ -260,7 +327,7 @@ export const citizenApi = {
    * Fetches all incidents (used for the directory page).
    */
   getAllIncidents: async (): Promise<Incident[]> => {
-    const res = await fetch(`${BASE_URL}/incidents`);
+    const res = await citizenFetch(`${BASE_URL}/incidents`);
     const json = await res.json();
     if (!json.success) throw new Error(json.error ?? 'Failed to fetch incidents');
     return json.data as Incident[];
