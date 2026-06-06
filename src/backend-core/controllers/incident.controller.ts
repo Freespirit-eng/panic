@@ -3,10 +3,27 @@ import { incidentService } from '../services/incident.service';
 import { asyncHandler, AppError } from '../middleware/error.middleware';
 import { createIncidentSchema } from '../validators';
 
+import { db } from '../database/db';
+
 export const incidentController = {
   getIncidents: asyncHandler(async (req: Request, res: Response) => {
-    const incidents = await incidentService.getIncidents();
+    const { severity, since } = req.query;
+    const incidents = await incidentService.getIncidents(severity as string, since as string);
     res.status(200).json({ success: true, data: incidents });
+  }),
+
+  liveQuery: asyncHandler(async (req: Request, res: Response) => {
+    const { severity } = req.query;
+    const targetSeverity = severity || 'Critical';
+    const rows = db.runRawQuery(
+      `SELECT id, severity, timestamp, json_extract(data, '$.type') as type, json_extract(data, '$.peopleDetected') as peopleDetected FROM incidents WHERE severity = ?`,
+      [targetSeverity]
+    );
+    res.status(200).json({
+      success: true,
+      query: `SELECT id, severity, timestamp, json_extract(data, '$.type') as type, json_extract(data, '$.peopleDetected') as peopleDetected FROM incidents WHERE severity = '${targetSeverity}'`,
+      rows
+    });
   }),
 
   getIncidentById: asyncHandler(async (req: Request, res: Response) => {

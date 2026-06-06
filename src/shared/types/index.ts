@@ -159,7 +159,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'citizen' | 'volunteer' | 'operator' | 'admin';
+  role: 'citizen' | 'volunteer' | 'operator' | 'commander' | 'admin';
   passwordHash?: string;
 }
 

@@ -25,6 +25,18 @@ import { citizenApi, ReportSubmitRequest } from '../services/citizenApi';
 import { Incident, IncidentType, SeverityLevel } from '../../shared/types';
 import { useToast } from '../components/ToastProvider';
 
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 // ─── Types & Constants ─────────────────────────────────────────────────────────
 
 const INCIDENT_TYPES: IncidentType[] = [
@@ -90,6 +102,7 @@ export default function ReportingPage() {
   const [countdown, setCountdown] = useState(5);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  const [voiceLang, setVoiceLang] = useState<'en-IN' | 'hi-IN' | 'kn-IN'>('en-IN');
 
   // — Page state machine —
   const [pageState, setPageState] = useState<PageState>('form');
@@ -100,15 +113,36 @@ export default function ReportingPage() {
   const [mergeLoading, setMergeLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
+  // — Nearby Volunteers & Dispatch state —
+  const [nearbyVolunteers, setNearbyVolunteers] = useState<any[]>([]);
+  const [volunteersLoading, setVolunteersLoading] = useState(false);
+  const [dispatchingId, setDispatchingId] = useState<string | null>(null);
+  const [isAutoRedirectCancelled, setIsAutoRedirectCancelled] = useState(false);
+
   const toast = useToast();
 
   // ── Submit Helper ────────────────────────────────────────────────────────────
   const submitReport = useCallback(async (payload: ReportSubmitRequest) => {
     setPageState('submitting');
+    setIsAutoRedirectCancelled(false);
     try {
       const res = await citizenApi.submitIncidentReport(payload);
       setCreatedIncident(res.createdIncident);
       localStorage.setItem('panicsense_reported_incident_id', res.createdIncident.id);
+
+      const latVal = res.createdIncident.location.lat;
+      const lngVal = res.createdIncident.location.lng;
+      if (latVal !== undefined && lngVal !== undefined) {
+        setVolunteersLoading(true);
+        try {
+          const vols = await citizenApi.getAllVolunteers(latVal, lngVal, 5);
+          setNearbyVolunteers(vols);
+        } catch (vErr) {
+          console.warn('Failed to fetch nearby volunteers', vErr);
+        } finally {
+          setVolunteersLoading(false);
+        }
+      }
 
       if (
         res.createdIncident.verification === 'Flagged' ||
@@ -179,14 +213,20 @@ export default function ReportingPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ── Voice Input ──────────────────────────────────────────────────────────────
+  // ── Voice Input (multilingual: English / हिंदी / ಕನ್ನಡ) ─────────────────────
+  const VOICE_LANGS = [
+    { code: 'en-IN' as const, label: 'EN', full: 'English (India)' },
+    { code: 'hi-IN' as const, label: 'हि', full: 'हिंदी' },
+    { code: 'kn-IN' as const, label: 'ಕ', full: 'ಕನ್ನಡ' },
+  ];
+
   const toggleVoice = useCallback(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRec: AnySpeechRecognition =
       (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
 
     if (!SpeechRec) {
-      alert('Speech recognition is not supported in this browser.');
+      toast.error('Voice input requires Chrome or Edge. Firefox is not supported.');
       return;
     }
 
@@ -197,9 +237,9 @@ export default function ReportingPage() {
     }
 
     const rec = new SpeechRec();
-    rec.continuous = true;
+    rec.continuous    = true;
     rec.interimResults = true;
-    rec.lang = 'en-US';
+    rec.lang          = voiceLang;   // ← uses selected language
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (event: any) => {
@@ -214,18 +254,22 @@ export default function ReportingPage() {
       }
     };
 
-    rec.onerror = () => {
+    rec.onerror = (e: any) => {
+      if (e.error === 'not-allowed') {
+        toast.error('Microphone permission denied. Please allow microphone access.');
+      } else if (e.error === 'language-not-supported') {
+        toast.error(`Language ${voiceLang} not supported by your browser. Try English.`);
+      }
       setIsListening(false);
     };
 
-    rec.onend = () => {
-      setIsListening(false);
-    };
+    rec.onend = () => { setIsListening(false); };
 
     recognitionRef.current = rec;
     rec.start();
     setIsListening(true);
-  }, [isListening]);
+    toast.info(`🎙 Listening in ${VOICE_LANGS.find(l => l.code === voiceLang)?.full}...`);
+  }, [isListening, voiceLang, toast]);
 
   // ── Redirection to Chat ────────────────────────────────────────────────────────
   const redirectToChat = useCallback(() => {
@@ -243,7 +287,7 @@ export default function ReportingPage() {
   }, [createdIncident]);
 
   useEffect(() => {
-    if (pageState === 'success' && createdIncident) {
+    if (pageState === 'success' && createdIncident && !isAutoRedirectCancelled) {
       setCountdown(5);
       const interval = setInterval(() => {
         setCountdown((c) => {
@@ -257,7 +301,22 @@ export default function ReportingPage() {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [pageState, createdIncident, redirectToChat]);
+  }, [pageState, createdIncident, isAutoRedirectCancelled, redirectToChat]);
+
+  const handleDispatchVolunteer = async (volunteerId: string) => {
+    if (!createdIncident) return;
+    setDispatchingId(volunteerId);
+    try {
+      await citizenApi.assignIncidentToVolunteer(volunteerId, createdIncident.id);
+      toast.success('✓ Rescue Dispatch Alert sent to volunteer successfully!');
+      // Update local state to show that the volunteer status is updated or On Mission
+      setNearbyVolunteers(prev => prev.map(v => v.id === volunteerId ? { ...v, status: 'On Mission' } : v));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to dispatch volunteer.');
+    } finally {
+      setDispatchingId(null);
+    }
+  };
 
   // ── Auto-Detect Location ──────────────────────────────────────────────────────
   const detectLocation = useCallback(async () => {
@@ -564,26 +623,40 @@ export default function ReportingPage() {
                 <label className="text-[10px] font-mono text-gray-500 tracking-widest uppercase">
                   Situation Description
                 </label>
-                <button
-                  type="button"
-                  id="voice-input-btn"
-                  onClick={toggleVoice}
-                  className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-md border transition ${
-                    isListening
-                      ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'
-                      : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-green-500/40 hover:text-green-400'
-                  }`}
-                >
-                  {isListening ? (
-                    <>
-                      <MicOff className="w-3 h-3" /> STOP
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-3 h-3" /> VOICE INPUT
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {/* Language selector */}
+                  {VOICE_LANGS.map(lang => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => setVoiceLang(lang.code)}
+                      title={lang.full}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded border transition
+                        ${voiceLang === lang.code
+                          ? 'border-green-600 bg-green-900/40 text-green-300'
+                          : 'border-gray-700 text-gray-600 hover:border-gray-500 hover:text-gray-400'}`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                  {/* Mic toggle */}
+                  <button
+                    type="button"
+                    id="voice-input-btn"
+                    onClick={toggleVoice}
+                    className={`flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-md border transition ${
+                      isListening
+                        ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse'
+                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-green-500/40 hover:text-green-400'
+                    }`}
+                  >
+                    {isListening ? (
+                      <><MicOff className="w-3 h-3" /> STOP</>
+                    ) : (
+                      <><Mic className="w-3 h-3" /> VOICE</>
+                    )}
+                  </button>
+                </div>
               </div>
               <textarea
                 id="description-input"
@@ -596,9 +669,10 @@ export default function ReportingPage() {
               {isListening && (
                 <div className="mt-2 flex items-center gap-2 text-[10px] text-red-400 font-mono">
                   <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                  Recording… speak clearly
+                  Recording in {VOICE_LANGS.find(l => l.code === voiceLang)?.full}… speak clearly
                 </div>
               )}
+
             </div>
 
             {/* Row 4 — People + Children + Image */}
@@ -800,9 +874,22 @@ export default function ReportingPage() {
                 <p className="text-xs text-green-200/60 mt-0.5 font-mono">
                   Your report has been received and processed by the AI engine. Responders have been notified.
                 </p>
-                <div className="mt-2 text-[10px] font-mono text-green-400/80 animate-pulse">
-                  Auto-redirecting to RAG Chat for immediate safety guidance in {countdown}s...
-                </div>
+                {!isAutoRedirectCancelled ? (
+                  <div className="mt-2 text-[10px] font-mono text-green-400/80 flex items-center gap-2">
+                    <span className="animate-pulse">Auto-redirecting to RAG Chat for immediate safety guidance in {countdown}s...</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsAutoRedirectCancelled(true)}
+                      className="text-[9px] font-mono text-yellow-400 hover:text-yellow-300 underline cursor-pointer bg-transparent border-none p-0"
+                    >
+                      [Cancel]
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 text-[10px] font-mono text-yellow-400/80">
+                    Auto-redirect cancelled. You can manually check safety chat or dispatch volunteers below.
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -952,6 +1039,105 @@ export default function ReportingPage() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Nearby Rescuers and Help Section */}
+            <div className="bg-[#111827] border border-gray-800 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-green-400" />
+                  <div>
+                    <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
+                      Nearby Emergency Volunteers
+                    </h3>
+                    <p className="text-[10px] text-gray-500 font-mono">
+                      Active responders within 5km radius of your location
+                    </p>
+                  </div>
+                </div>
+                {nearbyVolunteers.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const firstAvail = nearbyVolunteers.find(v => v.status === 'Available');
+                      if (firstAvail) {
+                        handleDispatchVolunteer(firstAvail.id);
+                      } else {
+                        toast.info('No available volunteers to dispatch right now.');
+                      }
+                    }}
+                    className="text-[10px] font-mono font-bold bg-red-600/25 border border-red-500/40 text-red-400 hover:bg-red-600/35 px-3 py-1.5 rounded-md transition cursor-pointer"
+                  >
+                    🚨 DISPATCH NEAREST HELP
+                  </button>
+                )}
+              </div>
+
+              {volunteersLoading ? (
+                <div className="flex items-center gap-2 text-gray-500 text-xs font-mono py-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-green-400" />
+                  Locating available volunteers...
+                </div>
+              ) : nearbyVolunteers.length === 0 ? (
+                <div className="text-xs text-gray-500 font-mono py-4 text-center border border-dashed border-gray-800 rounded-lg">
+                  No registered emergency volunteers detected nearby. EOC Command Center has been alerted.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {nearbyVolunteers.map(vol => {
+                    const dist = getDistance(
+                      createdIncident.location.lat,
+                      createdIncident.location.lng,
+                      vol.location.lat,
+                      vol.location.lng
+                    );
+                    const isAvailable = vol.status === 'Available';
+
+                    return (
+                      <div
+                        key={vol.id}
+                        className="flex items-center justify-between p-3 bg-[#0B1220] border border-gray-800 rounded-lg hover:border-gray-700 transition"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-white">{vol.name}</span>
+                            <span className="text-[9px] font-mono text-gray-500">({dist.toFixed(2)} km)</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {vol.skills.map(skill => (
+                              <span key={skill} className="text-[8px] font-mono bg-green-950/40 text-green-400 border border-green-900/30 px-1 py-0.5 rounded">
+                                {skill}
+                              </span>
+                            ))}
+                            {vol.equipment.map(eq => (
+                              <span key={eq} className="text-[8px] font-mono bg-blue-950/40 text-blue-400 border border-blue-900/30 px-1 py-0.5 rounded">
+                                {eq}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          {isAvailable ? (
+                            <button
+                              type="button"
+                              disabled={dispatchingId !== null}
+                              onClick={() => handleDispatchVolunteer(vol.id)}
+                              className="text-[10px] font-mono font-bold bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-md transition cursor-pointer"
+                            >
+                              {dispatchingId === vol.id ? 'Dispatching...' : 'Send Help'}
+                            </button>
+                          ) : (
+                            <span className="text-[10px] font-mono text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2.5 py-1 rounded">
+                              On Mission
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
