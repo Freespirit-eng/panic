@@ -22,10 +22,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // --- Health Check ---
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', async (req: Request, res: Response) => {
+  let aiStatus = 'OFFLINE';
+  try {
+    const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8001';
+    const aiRes = await fetch(`${aiEngineUrl}/health`);
+    if (aiRes.ok) {
+      aiStatus = 'ONLINE';
+    }
+  } catch (err) {
+    // Ignore error, AI status remains OFFLINE
+  }
+
   res.status(200).json({
     status: 'OK',
     service: 'PanicSense Backend Core',
+    aiStatus,
     timestamp: new Date().toISOString()
   });
 });

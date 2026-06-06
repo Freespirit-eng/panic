@@ -307,13 +307,17 @@ export default function DashboardPage() {
       .catch(() => {});
 
     // Health checks
-    fetch('http://localhost:3000/api/incidents/stats')
-      .then(r => setBackendOk(r.ok))
-      .catch(() => setBackendOk(false));
-
-    fetch('http://localhost:8001/health')
-      .then(r => setAiOk(r.ok))
-      .catch(() => setAiOk(false));
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    fetch(`${apiBase}/health`)
+      .then(r => r.json())
+      .then(data => {
+        setBackendOk(data.status === 'OK');
+        setAiOk(data.aiStatus === 'ONLINE');
+      })
+      .catch(() => {
+        setBackendOk(false);
+        setAiOk(false);
+      });
   }, []);
 
   useEffect(() => {
