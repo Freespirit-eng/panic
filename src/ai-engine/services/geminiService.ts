@@ -21,12 +21,28 @@ function extractJson(raw: string): string {
     .trim();
 }
 
+const DEFAULT_MODELS = [
+  process.env.GEMINI_MODEL,
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
+  'gemini-2.0-flash',
+].filter(Boolean) as string[];
+
 async function generateText(prompt: string): Promise<string> {
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: prompt,
-  });
-  return response.text ?? '';
+  let lastErr: any;
+  for (const model of DEFAULT_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+      });
+      return response.text ?? '';
+    } catch (err: any) {
+      lastErr = err;
+      console.warn(`[geminiService] Model ${model} failed, attempting next available model...`);
+    }
+  }
+  throw lastErr;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,18 +100,29 @@ Return ONLY valid JSON. No markdown fences, no explanation, no preamble.
         cleanBase64 = parts[1];
       }
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [
-          { text: prompt },
-          {
-            inlineData: {
-              mimeType,
-              data: cleanBase64,
-            },
-          },
-        ] as any,
-      });
+      let response: any;
+      let lastErr: any;
+      for (const model of DEFAULT_MODELS) {
+        try {
+          response = await ai.models.generateContent({
+            model,
+            contents: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType,
+                  data: cleanBase64,
+                },
+              },
+            ] as any,
+          });
+          break;
+        } catch (err: any) {
+          lastErr = err;
+          console.warn(`[geminiService] Vision analysis with model ${model} failed, trying next...`);
+        }
+      }
+      if (!response) throw lastErr;
       try {
         return JSON.parse(extractJson(response.text ?? ''));
       } catch {
