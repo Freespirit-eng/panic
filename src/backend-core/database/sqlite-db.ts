@@ -5,16 +5,13 @@
  */
 import BetterSqlite3 from 'better-sqlite3';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import {
   Incident, Volunteer, Mission, Broadcast,
   Geofence, ChatMessage, KnowledgeDocument, User
 } from '../../shared/types';
 import { generateSeededIncidents, seededVolunteers, seededGeofences } from '../../../seed';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-const DB_PATH    = path.resolve(__dirname, '../../../panicsense.db');
+const DB_PATH    = path.resolve(process.cwd(), 'panicsense.db');
 
 // ─── Seeded data (mirrors what InMemoryDB had inline) ─────────────────────────
 const SEEDED_MISSIONS: Mission[] = [
