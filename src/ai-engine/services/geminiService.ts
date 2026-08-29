@@ -23,9 +23,10 @@ function extractJson(raw: string): string {
 
 const DEFAULT_MODELS = [
   process.env.GEMINI_MODEL,
+  'gemini-3.6-flash',
+  'models/gemini-3.6-flash',
   'gemini-2.5-flash',
   'gemini-1.5-flash',
-  'gemini-2.0-flash',
 ].filter(Boolean) as string[];
 
 async function generateText(prompt: string): Promise<string> {

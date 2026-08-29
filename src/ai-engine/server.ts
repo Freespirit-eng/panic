@@ -17,7 +17,7 @@ app.get('/health', (_req, res) => {
   res.json({
     status: 'OK',
     service: 'PanicSense AI Engine',
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3.6-flash',
     timestamp: new Date().toISOString(),
   });
 });
