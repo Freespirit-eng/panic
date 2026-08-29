@@ -200,7 +200,7 @@ function RagInspector({ article, onClose }: RagInspectorProps) {
               </div>
               <div className="border border-green-900/10 bg-[#050c07]/50 p-2 rounded-lg">
                 <p className="text-gray-600 mb-0.5">EMBEDDING MODEL</p>
-                <p className="font-bold text-white">gemini-embedding-2</p>
+                <p className="font-bold text-white">text-embedding-004</p>
               </div>
               <div className="border border-green-900/10 bg-[#050c07]/50 p-2 rounded-lg">
                 <p className="text-gray-600 mb-0.5">RETRIEVAL WEIGHT</p>

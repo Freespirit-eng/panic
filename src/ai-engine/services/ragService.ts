@@ -82,27 +82,36 @@ export const ragService = {
     threshold = 0.65,
     topN = 3,
   ): Promise<KnowledgeArticle[]> => {
-    if (!cacheReady || knowledgeCache.length === 0) {
-      // Fallback: basic keyword search on tags
-      console.warn('[RAG] Cache not ready — using keyword fallback for knowledge search.');
-      const lower = query.toLowerCase();
-      return knowledgeBase
-        .filter((doc) => doc.tags.some((tag) => lower.includes(tag)))
-        .slice(0, topN);
+    if (cacheReady && knowledgeCache.length > 0) {
+      try {
+        const queryVector = await embeddingService.getEmbeddingVector(query);
+
+        const scored = knowledgeCache.map(({ doc, vector }) => ({
+          doc,
+          score: cosineSimilarity(queryVector, vector),
+        }));
+
+        const matches = scored
+          .filter(({ score }) => score >= threshold)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, topN)
+          .map(({ doc }) => doc);
+
+        if (matches.length > 0) {
+          return matches;
+        }
+      } catch (err: any) {
+        console.warn('[RAG] Vector similarity search failed, falling back to keyword search:', err.message);
+      }
     }
 
-    const queryVector = await embeddingService.getEmbeddingVector(query);
+    // Fallback: basic keyword search on tags & content
+    const lower = query.toLowerCase();
+    const matches = knowledgeBase
+      .filter((doc) => doc.tags.some((tag) => lower.includes(tag)) || doc.content.toLowerCase().includes(lower) || doc.title.toLowerCase().includes(lower))
+      .slice(0, topN);
 
-    const scored = knowledgeCache.map(({ doc, vector }) => ({
-      doc,
-      score: cosineSimilarity(queryVector, vector),
-    }));
-
-    return scored
-      .filter(({ score }) => score >= threshold)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topN)
-      .map(({ doc }) => doc);
+    return matches.length > 0 ? matches : knowledgeBase.slice(0, topN);
   },
 
   /**

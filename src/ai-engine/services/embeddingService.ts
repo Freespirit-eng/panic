@@ -12,11 +12,11 @@ export const embeddingService = {
    */
   getEmbeddingVector: async (text: string): Promise<number[]> => {
     const result = await ai.models.embedContent({
-      model: 'gemini-embedding-2',
+      model: 'text-embedding-004',
       contents: text,
     });
 
-    const values = result.embeddings?.[0]?.values;
+    const values = (result as any).embedding?.values || result.embeddings?.[0]?.values;
     if (!values || values.length === 0) {
       throw new Error('[embeddingService] Empty embedding returned from Gemini');
     }
