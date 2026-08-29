@@ -120,7 +120,8 @@ export const ragService = {
     // Fetch all incidents from the backend API
     let incidents: Incident[] = [];
     try {
-      const res = await fetch('http://localhost:3000/api/incidents');
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+      const res = await fetch(`${backendUrl}/api/incidents`);
       if (res.ok) {
         const json = await res.json();
         incidents = Array.isArray(json.data) ? json.data : [];

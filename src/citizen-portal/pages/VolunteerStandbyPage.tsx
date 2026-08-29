@@ -328,7 +328,7 @@ export default function VolunteerStandbyPage() {
   useEffect(() => {
     if (!volunteerId) return;
 
-    const socket = io('http://localhost:3000', { transports: ['websocket', 'polling'] });
+    const socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
     socketRef.current = socket;
 
     socket.on('connect', () => {

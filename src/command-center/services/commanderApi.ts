@@ -8,7 +8,7 @@ import {
   Volunteer,
 } from '../../shared/types';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   let token = localStorage.getItem('panicsense_commander_token');

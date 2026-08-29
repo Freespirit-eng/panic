@@ -135,7 +135,8 @@ router.post('/responder-chat', async (req: Request, res: Response) => {
     // Step 1 — fetch incident data from the backend API
     let incident: any;
     try {
-      const incidentRes = await fetch(`http://localhost:3000/api/incidents/${incidentId}`);
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+      const incidentRes = await fetch(`${backendUrl}/api/incidents/${incidentId}`);
       if (!incidentRes.ok) {
         throw new Error(`Backend returned ${incidentRes.status}`);
       }

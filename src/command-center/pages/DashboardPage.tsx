@@ -307,7 +307,7 @@ export default function DashboardPage() {
       .catch(() => {});
 
     // Health checks
-    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    const apiBase = import.meta.env.VITE_API_URL || '/api';
     fetch(`${apiBase}/health`)
       .then(r => r.json())
       .then(data => {
