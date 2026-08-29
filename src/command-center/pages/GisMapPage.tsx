@@ -23,8 +23,8 @@ import 'leaflet/dist/leaflet.css';
 
 const OWM_KEY      = import.meta.env.VITE_OWM_API_KEY as string;
 const BENGALURU    = { lat: 12.9716, lng: 77.5946 } as const;
-const CARTO_DARK   = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const CARTO_ATTR   = '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>';
+const TILE_URL     = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTR    = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const OWM_LAYERS = [
   { id: 'precipitation_new', label: '🌧 Rain',        color: '#3b82f6' },
@@ -469,7 +469,7 @@ export default function GisMapPage() {
           zoomControl={false}
         >
           {/* Dark base layer */}
-          <TileLayer url={CARTO_DARK} attribution={CARTO_ATTR} maxZoom={19} />
+          <TileLayer url={TILE_URL} attribution={TILE_ATTR} maxZoom={19} className="dark-tiles" />
 
           {/* OpenWeatherMap overlay */}
           {selectedOWMLayer && OWM_KEY && (
