@@ -26,7 +26,7 @@ Emergency shelters are activated during major flood events. Contact local emerge
     category: 'Fire',
     tags: ['fire', 'wildfire', 'evacuation', 'defensible space', 'smoke', 'burn'],
     content: `
-When a fire breaks out, alert everyone in the building immediately by activating the nearest fire alarm. Call emergency services (911) and exit through the nearest safe route. Close doors behind you to slow the spread of smoke and fire — do not lock them. Never use elevators during a fire; always use stairs.
+When a fire breaks out, alert everyone in the building immediately by activating the nearest fire alarm. Call emergency services (112 or 101 for Fire) and exit through the nearest safe route. Close doors behind you to slow the spread of smoke and fire — do not lock them. Never use elevators during a fire; always use stairs.
 
 If you encounter smoke while evacuating, stay low and crawl under the smoke. Feel doors before opening them — if hot, use an alternate route. If your clothes catch fire, stop, drop, and roll to smother the flames. Once outside, move to the designated assembly point and do not re-enter the building for any reason.
 
@@ -62,7 +62,7 @@ If a road collapses while you are driving, remain calm. Do not attempt to accele
 
 Never attempt to cross a road with visible collapse damage. Underground voids can extend well beyond what is visible at the surface — the area may be significantly larger than it appears. Keep a safe perimeter of at least 100 meters and wait for emergency services and structural engineers to assess the zone. Do not allow children or pets near the collapse area.
 
-Report road collapses immediately to emergency services (911) and the local roads authority. Include the exact location (street name, intersecting roads, landmarks), time of discovery, and estimated size of the damage. If utilities such as water mains or gas lines appear to be ruptured, treat the area as a critical hazard and expand the perimeter accordingly.
+Report road collapses immediately to emergency services (112) and the local roads authority. Include the exact location (street name, intersecting roads, landmarks), time of discovery, and estimated size of the damage. If utilities such as water mains or gas lines appear to be ruptured, treat the area as a critical hazard and expand the perimeter accordingly.
     `.trim(),
   },
   {
@@ -75,7 +75,7 @@ After an earthquake, explosion, or severe storm, buildings may sustain structura
 
 Warning signs of imminent structural failure include: unusual sounds such as popping or creaking, visible leaning or tilting of the structure, doors or windows that no longer fit their frames, cracks wider than 1/4 inch in walls or ceilings, and visible separation between walls and floor or ceiling. If you observe any of these, evacuate immediately.
 
-If someone is trapped inside a collapsed or partially collapsed structure, call 911 immediately and provide the exact address and number of occupants. Do not attempt a civilian rescue unless you are trained — improper movement of debris can cause secondary collapses. If you can safely do so without entering the danger zone, keep the trapped person calm and conscious through verbal communication.
+If someone is trapped inside a collapsed or partially collapsed structure, call 112 / 108 immediately and provide the exact address and number of occupants. Do not attempt a civilian rescue unless you are trained — improper movement of debris can cause secondary collapses. If you can safely do so without entering the danger zone, keep the trapped person calm and conscious through verbal communication.
 
 Emergency responders will use a color tagging system to classify damaged buildings: Green (safe to enter), Yellow (restricted access), Red (unsafe, do not enter), and Black (demolished). Respect these tags at all times. Keep records of any structural damage with photographs for insurance and recovery assistance purposes.
     `.trim(),
@@ -105,7 +105,7 @@ Floodwater is almost always contaminated with bacteria, chemicals, sewage, and d
 
 Hypothermia occurs when body temperature drops below 95°F (35°C) and can occur even in mildly cold conditions if a person is wet. Signs include intense shivering, slurred speech, confusion, clumsiness, drowsiness, and weak pulse. If hypothermia is suspected, move the person to a warm, dry location, remove wet clothing, cover with warm blankets, and give warm (not hot) beverages if conscious. Do not rub limbs — this can push cold blood toward the heart. Seek medical attention immediately.
 
-If someone is drowning, call 911 first. If trained, perform a reach-and-throw rescue (extend a rope, towel, or branch) before entering the water — a panicking drowning victim can submerge a rescuer. If you must enter, approach from behind. Once the victim is on land, check for breathing and begin CPR if necessary. Even if the person appears recovered, insist on medical evaluation — secondary drowning from inhaled water can occur hours later.
+If someone is drowning, call 112 / 108 immediately. If trained, perform a reach-and-throw rescue (extend a rope, towel, or branch) before entering the water — a panicking drowning victim can submerge a rescuer. If you must enter, approach from behind. Once the victim is on land, check for breathing and begin CPR if necessary. Even if the person appears recovered, insist on medical evaluation — secondary drowning from inhaled water can occur hours later.
 
 In flood rescue operations, currents are extremely powerful. One foot of flowing water can exert over 500 pounds of force. Rescuers must wear personal flotation devices and never enter swiftwater without rope-based tethering and proper training. Citizens should wait for official water rescue teams rather than attempting self-rescue in fast-moving water.
     `.trim(),
@@ -152,7 +152,7 @@ For fractures, immobilize the injured limb in the position found — do not atte
 
 Burns should be cooled with cool (not cold or ice) running water for at least 20 minutes. Do not apply butter, toothpaste, or any home remedies. Cover with a clean, non-fluffy dressing. Do not burst blisters. For large burns (more than 10% of body surface area, or burns to face, hands, genitals, or inhalation burns), this is a medical emergency — prioritize evacuation to definitive care.
 
-Dehydration and heat illness are common in disaster zones, especially in warm climates or during physical exertion in rescue operations. Signs of heat exhaustion include heavy sweating, cold/pale/clammy skin, weakness, and nausea. Move the person to a cool area, loosen clothing, apply cool wet cloths, and give water if conscious. Heat stroke (hot, red, dry or moist skin, confusion, loss of consciousness) is life-threatening — cool the person rapidly with ice packs to the neck, armpits, and groin and call 911 immediately.
+Dehydration and heat illness are common in disaster zones, especially in warm climates or during physical exertion in rescue operations. Signs of heat exhaustion include heavy sweating, cold/pale/clammy skin, weakness, and nausea. Move the person to a cool area, loosen clothing, apply cool wet cloths, and give water if conscious. Heat stroke (hot, red, dry or moist skin, confusion, loss of consciousness) is life-threatening — cool the person rapidly with ice packs to the neck, armpits, and groin and dial 112 / 108 immediately.
     `.trim(),
   },
 ];

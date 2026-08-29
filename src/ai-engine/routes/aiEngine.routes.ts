@@ -108,7 +108,7 @@ router.post('/citizen-chat', async (req: Request, res: Response) => {
     console.error('[AI Engine] /citizen-chat error:', err.message);
     return res.status(503).json({
       response:
-        'I am temporarily unable to process your request. If this is an emergency, please call 911 immediately.',
+        'I am temporarily unable to process your request. If this is an emergency, please dial 112 or 101 (Fire) / 108 (Ambulance) immediately.',
       sources: [],
       error: 'AI Engine temporarily unavailable',
     });
