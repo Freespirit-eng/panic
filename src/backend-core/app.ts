@@ -1,6 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import router from './routes/index';
 import { errorMiddleware, AppError } from './middleware/error.middleware';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -45,9 +50,28 @@ app.get('/api/health', async (req: Request, res: Response) => {
 // --- Primary API Router ---
 app.use('/api', router);
 
-// --- 404 Handler (unmatched routes) ---
-app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+// --- Serve Vite Production Build (Static Frontend) ---
+// Vite outputs built assets to dist/ at the project root.
+// After esbuild bundles server.ts into dist/server.js, the client assets
+// are siblings in the same dist/ folder or in dist/assets/.
+const clientDistPath = __dirname;
+app.use(express.static(clientDistPath, { index: false }));
+
+// --- SPA Fallback: Serve index.html for all non-API routes ---
+// This enables client-side routing (React Router) to work on page refresh.
+app.get('*', (req: Request, res: Response, next: NextFunction) => {
+  // Don't serve index.html for API routes — let them fall through to 404
+  if (req.originalUrl.startsWith('/api')) {
+    next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+    return;
+  }
+
+  const indexPath = path.resolve(clientDistPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+    }
+  });
 });
 
 // --- Centralized Error Middleware ---
